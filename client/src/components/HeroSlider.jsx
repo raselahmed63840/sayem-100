@@ -23,14 +23,17 @@ const HeroSlider = ({ slides = [] }) => {
 
   if (activeSlides.length === 0) {
     return (
-      <section className="home-hero">
-        <div className="home-hero-content">
-          <p>Nurnobi Bamboo Craft</p>
-          <h1>All Kinds of Handmade Bamboo Products</h1>
-          <span>Eco-friendly handmade bamboo products from Bangladesh.</span>
-          <Link to="/products" className="hero-btn">
-            Explore Products
-          </Link>
+      <section className="hero-slider">
+        <div className="hero-slide hero-fallback-bg">
+          <div className="hero-dark-overlay" />
+          <div className="hero-slide-content">
+            <p>Nurnobi Bamboo Craft</p>
+            <h1>All Kinds of Handmade Bamboo Products</h1>
+            <span>Eco-friendly handmade bamboo products from Bangladesh.</span>
+            <Link to="/products" className="hero-btn">
+              Explore Products
+            </Link>
+          </div>
         </div>
       </section>
     );
@@ -43,29 +46,31 @@ const HeroSlider = ({ slides = [] }) => {
       <div className="hero-slide">
         <img
           src={optimizeCloudinaryImage(slide.image, {
-            width: 1600,
+            width: 1920,
             height: 650,
             fallback: "/logo.png",
           })}
-          alt={slide.title || "Bamboo Craft Slider"}
+          alt={slide.title || "Nurnobi Bamboo Craft Slider"}
           onError={(e) => {
-            e.currentTarget.src = "/logo.png";
+            e.currentTarget.style.display = "none";
           }}
         />
 
         <div className="hero-dark-overlay" />
 
         <div className="hero-slide-content">
-          <p>Nurnobi Bamboo Craft</p>
-          <h1>{slide.title}</h1>
+          <p>{slide.subtitle || "Nurnobi Bamboo Craft"}</p>
 
-          {slide.description && <span>{slide.description}</span>}
+          <h1>{slide.title || "Handmade Bamboo Craft Products"}</h1>
 
-          {slide.buttonText && (
-            <Link to={slide.buttonLink || "/products"} className="hero-btn">
-              {slide.buttonText}
-            </Link>
-          )}
+          <span>
+            {slide.description ||
+              "Eco-friendly bamboo products made with natural materials, traditional craftsmanship and modern design."}
+          </span>
+
+          <Link to={slide.buttonLink || "/products"} className="hero-btn">
+            {slide.buttonText || "Explore Products"}
+          </Link>
         </div>
       </div>
 
@@ -77,7 +82,6 @@ const HeroSlider = ({ slides = [] }) => {
               type="button"
               className={index === activeIndex ? "active" : ""}
               onClick={() => setActiveIndex(index)}
-              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>

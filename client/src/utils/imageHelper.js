@@ -1,5 +1,4 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
 const BACKEND_URL = API_URL.replace(/\/api\/?$/, "");
 
 export const getImageUrl = (image, fallback = "/logo.png") => {
@@ -23,32 +22,25 @@ export const getImageUrl = (image, fallback = "/logo.png") => {
 };
 
 export const optimizeCloudinaryImage = (image, options = {}) => {
-  try {
-    const fallback = options.fallback || "/logo.png";
-    const url = getImageUrl(image, fallback);
+  const fallback = options.fallback || "/logo.png";
+  const url = getImageUrl(image, fallback);
 
-    if (!url) return fallback;
-
-    // Local upload image হলে direct return করবে
-    if (!url.includes("res.cloudinary.com") || !url.includes("/upload/")) {
-      return url;
-    }
-
-    const width = options.width || 1200;
-    const height = options.height;
-    const quality = options.quality || "auto";
-    const format = options.format || "auto";
-
-    const transforms = [`f_${format}`, `q_${quality}`, `w_${width}`];
-
-    if (height) {
-      transforms.push(`h_${height}`, "c_fill");
-    }
-
-    return url.replace("/upload/", `/upload/${transforms.join(",")}/`);
-  } catch {
-    return options.fallback || "/logo.png";
+  if (!url.includes("res.cloudinary.com") || !url.includes("/upload/")) {
+    return url;
   }
+
+  const width = options.width || 1600;
+  const height = options.height;
+  const quality = options.quality || "auto";
+  const format = options.format || "auto";
+
+  const transforms = [`f_${format}`, `q_${quality}`, `w_${width}`];
+
+  if (height) {
+    transforms.push(`h_${height}`, "c_fill");
+  }
+
+  return url.replace("/upload/", `/upload/${transforms.join(",")}/`);
 };
 
 export default getImageUrl;
