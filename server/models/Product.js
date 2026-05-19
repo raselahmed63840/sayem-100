@@ -1,19 +1,5 @@
 const mongoose = require("mongoose");
 
-const imageSchema = new mongoose.Schema(
-  {
-    url: {
-      type: String,
-      default: "",
-    },
-    public_id: {
-      type: String,
-      default: "",
-    },
-  },
-  { _id: false },
-);
-
 const productSchema = new mongoose.Schema(
   {
     title: {
@@ -38,7 +24,6 @@ const productSchema = new mongoose.Schema(
 
     productType: {
       type: String,
-      trim: true,
       default: "",
     },
 
@@ -107,14 +92,22 @@ const productSchema = new mongoose.Schema(
       default: "Customization available as per buyer requirements.",
     },
 
-    images: {
-      type: [imageSchema],
-      default: [],
-    },
+    images: [
+      {
+        url: String,
+        public_id: String,
+      },
+    ],
 
     thumbnail: {
-      type: imageSchema,
-      default: null,
+      url: {
+        type: String,
+        default: "",
+      },
+      public_id: {
+        type: String,
+        default: "",
+      },
     },
 
     isFeatured: {
@@ -135,15 +128,5 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
-
-productSchema.index({
-  title: "text",
-  shortDescription: "text",
-  description: "text",
-  material: "text",
-  productType: "text",
-});
-
-productSchema.index({ category: 1 });
 
 module.exports = mongoose.model("Product", productSchema);

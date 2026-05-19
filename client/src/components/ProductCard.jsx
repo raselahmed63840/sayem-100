@@ -1,36 +1,38 @@
 import { Link } from "react-router-dom";
-import { getImageUrl, optimizeCloudinaryImage } from "../utils/imageHelper";
+import getImageUrl from "../utils/imageHelper";
 
 const ProductCard = ({ product }) => {
   const image = product.thumbnail || product.images?.[0];
 
   return (
-    <article className="product-card">
-      <Link to={`/products/${product.slug}`} className="product-img">
+    <Link to={`/products/${product.slug}`} className="product-card">
+      <div className="product-image">
         <img
-          src={optimizeCloudinaryImage(getImageUrl(image), 600)}
+          src={getImageUrl(image)}
           alt={product.title}
           loading="lazy"
+          onError={(e) => {
+            e.currentTarget.src = "/logo.png";
+          }}
         />
-      </Link>
+      </div>
 
       <div className="product-info">
-        <span>{product.category?.name || "Bamboo Craft"}</span>
-
-        <h3>
-          <Link to={`/products/${product.slug}`}>{product.title}</Link>
-        </h3>
-
-        <p>
-          {product.shortDescription ||
-            "Eco-friendly handmade bamboo product from Bangladesh."}
+        <p className="product-category">
+          {product.productType || product.category?.name || "Bamboo Product"}
         </p>
 
-        <Link to={`/products/${product.slug}`} className="text-btn">
-          View Details →
-        </Link>
+        <h3 className="product-title">{product.title}</h3>
+
+        <p className="product-short">
+          {product.shortDescription ||
+            product.description ||
+            "Eco-friendly handmade bamboo product crafted with natural materials."}
+        </p>
+
+        <span className="product-view-btn">View Details</span>
       </div>
-    </article>
+    </Link>
   );
 };
 

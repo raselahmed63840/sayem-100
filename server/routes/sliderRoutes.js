@@ -1,18 +1,21 @@
 const express = require("express");
+
 const {
   getSliders,
-  getAllSlidersAdmin,
+  getAdminSliders,
   createSlider,
   updateSlider,
   deleteSlider,
 } = require("../controllers/sliderController");
-const { protect } = require("../middleware/authMiddleware");
+
 const upload = require("../middleware/uploadMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 router.get("/", getSliders);
-router.get("/admin/all", protect, getAllSlidersAdmin);
+router.get("/admin/all", protect, getAdminSliders);
+
 router.post("/", protect, upload.single("image"), createSlider);
 router.put("/:id", protect, upload.single("image"), updateSlider);
 router.delete("/:id", protect, deleteSlider);

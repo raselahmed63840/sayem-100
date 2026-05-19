@@ -1,24 +1,33 @@
 const fs = require("fs");
+const path = require("path");
 const Slider = require("../models/Slider");
-const cloudinary = require("../config/cloudinary");
-const deleteCloudinaryImage = require("../utils/deleteCloudinaryImage");
 
-const uploadImage = async (file) => {
-  if (!file) return null;
-
-  const result = await cloudinary.uploader.upload(file.path, {
-    folder: "nurnobibamboocraft/sliders",
-  });
-
-  fs.unlinkSync(file.path);
+const makeImageObject = (file) => {
+  if (!file) {
+    return {
+      url: "",
+      public_id: "",
+    };
+  }
 
   return {
-    url: result.secure_url,
-    public_id: result.public_id,
+    url: `/uploads/${file.filename}`,
+    public_id: file.filename,
   };
 };
 
-const getSliders = async (req, res, next) => {
+const deleteLocalImage = (publicId) => {
+  if (!publicId) return;
+
+  const imagePath = path.join(__dirname, "../uploads", publicId);
+
+  if (fs.existsSync(imagePath)) {
+    fs.unlinkSync(imagePath);
+  }
+};
+
+// Public sliders
+const getSliders = async (req, res) => {
   try {
     const sliders = await Slider.find({ isActive: true }).sort({
       order: 1,
@@ -30,38 +39,72 @@ const getSliders = async (req, res, next) => {
       sliders,
     });
   } catch (error) {
-    next(error);
+    console.log("Public slider load error:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const getAllSlidersAdmin = async (req, res, next) => {
+// Admin sliders
+const getAdminSliders = async (req, res) => {
   try {
-    const sliders = await Slider.find().sort({ order: 1, createdAt: -1 });
+    const sliders = await Slider.find({}).sort({
+      order: 1,
+      createdAt: -1,
+    });
 
     res.json({
       success: true,
       sliders,
     });
   } catch (error) {
-    next(error);
+    console.log("Admin slider load error:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const createSlider = async (req, res, next) => {
+const createSlider = async (req, res) => {
   try {
-    const { title, subtitle, buttonText, buttonLink, order, isActive } =
-      req.body;
-
-    const image = await uploadImage(req.file);
-
-    const slider = await Slider.create({
+    const {
       title,
       subtitle,
+      description,
       buttonText,
       buttonLink,
       order,
       isActive,
-      image,
+    } = req.body;
+
+    if (!title) {
+      return res.status(400).json({
+        success: false,
+        message: "Slider title is required",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Slider image is required",
+      });
+    }
+
+    const slider = await Slider.create({
+      title,
+      subtitle: subtitle || "",
+      description: description || "",
+      buttonText: buttonText || "Explore Products",
+      buttonLink: buttonLink || "/products",
+      order: Number(order) || 0,
+      isActive: isActive === "false" ? false : true,
+      image: makeImageObject(req.file),
     });
 
     res.status(201).json({
@@ -70,59 +113,82 @@ const createSlider = async (req, res, next) => {
       slider,
     });
   } catch (error) {
-    next(error);
+    console.log("Slider create error:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const updateSlider = async (req, res, next) => {
+const updateSlider = async (req, res) => {
   try {
     const slider = await Slider.findById(req.params.id);
 
     if (!slider) {
-      res.status(404);
-      throw new Error("Slider not found");
+      return res.status(404).json({
+        success: false,
+        message: "Slider not found",
+      });
     }
 
-    const fields = [
-      "title",
-      "subtitle",
-      "buttonText",
-      "buttonLink",
-      "order",
-      "isActive",
-    ];
+    const {
+      title,
+      subtitle,
+      description,
+      buttonText,
+      buttonLink,
+      order,
+      isActive,
+    } = req.body;
 
-    fields.forEach((field) => {
-      if (req.body[field] !== undefined) slider[field] = req.body[field];
-    });
+    if (title !== undefined) slider.title = title;
+    if (subtitle !== undefined) slider.subtitle = subtitle;
+    if (description !== undefined) slider.description = description;
+    if (buttonText !== undefined) slider.buttonText = buttonText;
+    if (buttonLink !== undefined) slider.buttonLink = buttonLink;
+    if (order !== undefined) slider.order = Number(order) || 0;
+
+    if (isActive !== undefined) {
+      slider.isActive = isActive === "false" ? false : true;
+    }
 
     if (req.file) {
-      await deleteCloudinaryImage(slider.image?.public_id);
-      slider.image = await uploadImage(req.file);
+      deleteLocalImage(slider.image?.public_id);
+      slider.image = makeImageObject(req.file);
     }
 
-    const updatedSlider = await slider.save();
+    await slider.save();
 
     res.json({
       success: true,
       message: "Slider updated successfully",
-      slider: updatedSlider,
+      slider,
     });
   } catch (error) {
-    next(error);
+    console.log("Slider update error:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const deleteSlider = async (req, res, next) => {
+const deleteSlider = async (req, res) => {
   try {
     const slider = await Slider.findById(req.params.id);
 
     if (!slider) {
-      res.status(404);
-      throw new Error("Slider not found");
+      return res.status(404).json({
+        success: false,
+        message: "Slider not found",
+      });
     }
 
-    await deleteCloudinaryImage(slider.image?.public_id);
+    deleteLocalImage(slider.image?.public_id);
+
     await slider.deleteOne();
 
     res.json({
@@ -130,13 +196,18 @@ const deleteSlider = async (req, res, next) => {
       message: "Slider deleted successfully",
     });
   } catch (error) {
-    next(error);
+    console.log("Slider delete error:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
 module.exports = {
   getSliders,
-  getAllSlidersAdmin,
+  getAdminSliders,
   createSlider,
   updateSlider,
   deleteSlider,

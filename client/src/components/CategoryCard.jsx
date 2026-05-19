@@ -1,28 +1,16 @@
 import { Link } from "react-router-dom";
-import { getImageUrl, optimizeCloudinaryImage } from "../utils/imageHelper";
+import getImageUrl from "../utils/imageHelper";
 
 const CategoryCard = ({ category }) => {
-  const path =
-    category._id && category._id.length === 24
-      ? `/products/category/${category._id}`
-      : "/products";
-
   return (
-    <Link to={path} className="category-card">
-      <div className="category-img">
-        <img
-          src={optimizeCloudinaryImage(getImageUrl(category.image), 600)}
-          alt={category.name}
-          loading="lazy"
-        />
+    <Link to={`/products/category/${category._id}`} className="category-card">
+      <div className="category-image">
+        <img src={getImageUrl(category.image)} alt={category.name} />
       </div>
 
-      <div className="category-body">
+      <div className="category-content">
         <h3>{category.name}</h3>
-        <p>
-          {category.description ||
-            "Premium eco-friendly bamboo handmade products."}
-        </p>
+        <p>{category.description}</p>
       </div>
     </Link>
   );

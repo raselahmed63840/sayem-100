@@ -1,171 +1,250 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-
 import api from "../api/axios";
-import SEO from "../components/SEO";
+import getImageUrl from "../utils/imageHelper";
 import Loading from "../components/Loading";
-import InquiryForm from "../components/InquiryForm";
-import { getImageUrl, optimizeCloudinaryImage } from "../utils/imageHelper";
+
+const STATIC_SIDE_IMAGE = "/details-static.jpg";
 
 const ProductDetails = () => {
   const { slug } = useParams();
 
   const [product, setProduct] = useState(null);
-  const [activeImage, setActiveImage] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const galleryImages = useMemo(() => {
+    if (!product) return [];
+
+    const images = [];
+
+    if (product.thumbnail?.url) {
+      images.push(product.thumbnail);
+    }
+
+    if (Array.isArray(product.images)) {
+      product.images.forEach((img) => {
+        if (img?.url && !images.some((item) => item.url === img.url)) {
+          images.push(img);
+        }
+      });
+    }
+
+    return images;
+  }, [product]);
 
   useEffect(() => {
     const loadProduct = async () => {
       try {
-        const { data } = await api.get(`/products/slug/${slug}`);
-        setProduct(data.product);
-        setActiveImage(data.product?.thumbnail || data.product?.images?.[0]);
-      } catch {
-        setProduct(null);
+        setLoading(true);
+        setError("");
+
+        const { data } = await api.get(`/products/${slug}`);
+
+        const foundProduct = data.product;
+
+        if (!foundProduct) {
+          setError("Product not found.");
+          return;
+        }
+
+        setProduct(foundProduct);
+
+        if (foundProduct.category?._id) {
+          const relatedRes = await api.get(
+            `/products?category=${foundProduct.category._id}&limit=8`,
+          );
+
+          const filtered = (relatedRes.data.products || []).filter(
+            (item) => item._id !== foundProduct._id,
+          );
+
+          setRelatedProducts(filtered);
+        }
+      } catch (err) {
+        console.log(
+          "Product details error:",
+          err.response?.data || err.message,
+        );
+        setError("Product details load failed.");
       } finally {
         setLoading(false);
       }
     };
 
-    loadProduct();
+    if (slug) {
+      loadProduct();
+    }
   }, [slug]);
 
-  if (loading) return <Loading text="Loading product..." />;
+  if (loading) return <Loading />;
 
-  if (!product) {
+  if (error || !product) {
     return (
-      <section className="page-section">
-        <div className="container empty-state">
-          <h1>Product not found</h1>
-          <Link to="/products" className="primary-btn">
-            Back to Products
-          </Link>
+      <main className="product-details-page">
+        <div className="container">
+          <div className="details-error-box">
+            <h2>{error || "Product not found."}</h2>
+            <Link to="/products">Back to Products</Link>
+          </div>
         </div>
-      </section>
+      </main>
     );
   }
 
-  const whatsappNumber =
-    import.meta.env.VITE_WHATSAPP_NUMBER || "8801863840408";
-
-  const inquiryText = encodeURIComponent(
-    `Hello Nurnobi Bamboo Craft, I want to know more about ${product.title}.`,
-  );
-
   return (
-    <section className="page-section">
-      <SEO
-        title={`${product.title} | Nurnobi Bamboo Craft`}
-        description={
-          product.shortDescription ||
-          "Eco-friendly handmade bamboo product from Bangladesh."
-        }
-      />
+    <main className="product-details-page">
+      <section
+        className="product-details-hero"
+        style={{
+          backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.1)), url(${getImageUrl(
+            product.thumbnail || product.images?.[0],
+            STATIC_SIDE_IMAGE,
+          )})`,
+        }}
+      >
+        <div className="container">
+          <h1>{product.productType || product.category?.name || "Bamboo"}</h1>
+        </div>
+      </section>
 
-      <div className="container product-details">
-        <div>
-          <div className="details-main-img">
-            <img
-              src={optimizeCloudinaryImage(getImageUrl(activeImage), 900)}
-              alt={product.title}
-            />
+      <section className="raw-section">
+        <div className="container">
+          <div className="section-title">
+            <h2>Raw Material and Product Description</h2>
+            <p>
+              Browse our natural bamboo collection made from eco-friendly
+              materials.
+            </p>
           </div>
 
-          {product.images?.length > 1 && (
-            <div className="thumb-row">
-              {product.images.map((img, index) => (
-                <button key={index} onClick={() => setActiveImage(img)}>
+          <div className="details-info-grid">
+            <div className="details-text">
+              <h3>Product details</h3>
+
+              <p>
+                <strong>{product.title}:</strong>{" "}
+                {product.description ||
+                  product.shortDescription ||
+                  "This product is made from natural bamboo and crafted for home, cafe, restaurant and export use."}
+              </p>
+
+              <ul className="product-spec-list">
+                <li>
+                  <strong>Scientific name:</strong>{" "}
+                  {product.scientificName || "Bambusa Vulgaris"}
+                </li>
+
+                <li>
+                  <strong>Care instructions:</strong>{" "}
+                  {product.buyerRequirement ||
+                    "Hand wash only. Keep dry after use."}
+                </li>
+
+                <li>
+                  <strong>Origin:</strong> {product.origin || "Bangladesh"}
+                </li>
+
+                <li>
+                  <strong>Color:</strong>{" "}
+                  {product.color || "Natural / Any color"}
+                </li>
+
+                <li>
+                  <strong>Size:</strong>{" "}
+                  {product.size || "As per buyer requirements"}
+                </li>
+
+                <li>
+                  <strong>MOQ:</strong> {product.moq || "500-3000 pcs"}
+                </li>
+
+                <li>
+                  <strong>Capacity:</strong>{" "}
+                  {product.capacity || "20000 pcs / 90 days hand made"}
+                </li>
+
+                <li>
+                  <strong>Lead time:</strong> {product.leadTime || "60-90 days"}
+                </li>
+
+                <li>
+                  <strong>Price:</strong> {product.priceType || "FOB"}
+                </li>
+              </ul>
+            </div>
+
+            <div className="details-static-image">
+              <img
+                src={STATIC_SIDE_IMAGE}
+                alt="Natural bamboo material"
+                onError={(e) => {
+                  e.currentTarget.src = getImageUrl(
+                    product.thumbnail || product.images?.[0],
+                  );
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="details-gallery-section">
+        <div className="container">
+          <div className="product-gallery-grid">
+            {galleryImages.length === 0 ? (
+              <p>No product gallery image found.</p>
+            ) : (
+              galleryImages.map((img, index) => (
+                <div
+                  className="details-gallery-card"
+                  key={img.public_id || index}
+                >
                   <img
-                    src={optimizeCloudinaryImage(getImageUrl(img), 180)}
-                    alt={product.title}
+                    src={getImageUrl(img)}
+                    alt={`${product.title} ${index + 1}`}
+                    onError={(e) => {
+                      e.currentTarget.src = "/logo.png";
+                    }}
                   />
-                </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      {relatedProducts.length > 0 && (
+        <section className="related-products-section">
+          <div className="container">
+            <div className="section-title">
+              <h2>Related Products</h2>
+              <p>More products from the same category.</p>
+            </div>
+
+            <div className="related-product-grid">
+              {relatedProducts.map((item) => (
+                <Link
+                  to={`/products/${item.slug}`}
+                  className="related-product-card"
+                  key={item._id}
+                >
+                  <img
+                    src={getImageUrl(item.thumbnail || item.images?.[0])}
+                    alt={item.title}
+                    onError={(e) => {
+                      e.currentTarget.src = "/logo.png";
+                    }}
+                  />
+                  <h3>{item.title}</h3>
+                </Link>
               ))}
             </div>
-          )}
-        </div>
-
-        <div className="details-content">
-          <span className="section-kicker">
-            {product.category?.name || "Bamboo Product"}
-          </span>
-
-          <h1>{product.title}</h1>
-
-          <p>
-            {product.shortDescription ||
-              "Eco-friendly handmade bamboo product from Bangladesh."}
-          </p>
-
-          <div className="spec-box">
-            <p>
-              <strong>Material:</strong> {product.material || "Bamboo"}
-            </p>
-            <p>
-              <strong>Scientific Name:</strong>{" "}
-              {product.scientificName || "Bambusa Vulgaris"}
-            </p>
-            <p>
-              <strong>Origin:</strong> {product.origin || "Bangladesh"}
-            </p>
-            <p>
-              <strong>Color:</strong> {product.color || "Natural / Any Color"}
-            </p>
-            <p>
-              <strong>Size:</strong>{" "}
-              {product.size || "As per buyer requirements"}
-            </p>
-            <p>
-              <strong>MOQ:</strong> {product.moq || "500-3000 pcs"}
-            </p>
-            <p>
-              <strong>Capacity:</strong>{" "}
-              {product.capacity || "20000 pcs / 90 days handmade"}
-            </p>
-            <p>
-              <strong>Lead Time:</strong> {product.leadTime || "60-90 days"}
-            </p>
-            <p>
-              <strong>Price:</strong> {product.priceType || "FOB"}
-            </p>
           </div>
-
-          <div className="details-desc">
-            <h3>Description</h3>
-            <p>
-              {product.description ||
-                "This product is carefully crafted by skilled artisans using sustainable bamboo and traditional craftsmanship."}
-            </p>
-          </div>
-
-          <div className="details-actions">
-            <a
-              href={`https://wa.me/${whatsappNumber}?text=${inquiryText}`}
-              target="_blank"
-              rel="noreferrer"
-              className="primary-btn"
-            >
-              WhatsApp Inquiry
-            </a>
-
-            <Link to="/contact" className="outline-btn">
-              Contact Us
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="container inquiry-wrap">
-        <div className="section-head">
-          <div>
-            <span className="section-kicker">Request Quotation</span>
-            <h2>Send Product Inquiry</h2>
-          </div>
-        </div>
-
-        <InquiryForm productName={product.title} />
-      </div>
-    </section>
+        </section>
+      )}
+    </main>
   );
 };
 

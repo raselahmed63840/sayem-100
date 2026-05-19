@@ -6,9 +6,12 @@ const AdminLogin = () => {
   const { admin, login } = useAuth();
   const navigate = useNavigate();
 
+  // Default login credentials
   const [email, setEmail] = useState("rasel63840@gmail.com");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("123456");
+
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   if (admin) {
     return <Navigate to="/admin6935/dashboard" replace />;
@@ -17,12 +20,15 @@ const AdminLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       await login(email, password);
       navigate("/admin6935/dashboard");
-    } catch {
+    } catch (error) {
       setError("Invalid email or password.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,8 +54,8 @@ const AdminLogin = () => {
           required
         />
 
-        <button className="admin-btn" type="submit">
-          Login
+        <button className="admin-btn" type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         {error && <p className="admin-error">{error}</p>}

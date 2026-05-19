@@ -54,28 +54,72 @@ const Home = () => {
   const [gallery, setGallery] = useState([]);
 
   useEffect(() => {
-    const loadHomeData = async () => {
-      try {
-        const [sliderRes, categoryRes, productRes, galleryRes] =
-          await Promise.all([
-            api.get("/sliders"),
-            api.get("/categories"),
-            api.get("/products?featured=true&limit=6"),
-            api.get("/gallery"),
-          ]);
+    let isMounted = true;
 
-        setSliders(sliderRes.data.sliders || []);
-        setCategories(categoryRes.data.categories || []);
-        setProducts(productRes.data.products || []);
-        setGallery((galleryRes.data.gallery || []).slice(0, 6));
-      } catch {
-        setCategories(fallbackCategories);
-      } finally {
-        setLoading(false);
+    const loadHomeData = async () => {
+      setLoading(true);
+
+      const [sliderRes, categoryRes, productRes, galleryRes] =
+        await Promise.allSettled([
+          api.get("/sliders"),
+          api.get("/categories"),
+          api.get("/products?featured=true&limit=6"),
+          api.get("/gallery"),
+        ]);
+
+      if (!isMounted) return;
+
+      if (sliderRes.status === "fulfilled") {
+        setSliders(sliderRes.value.data.sliders || []);
+      } else {
+        console.log(
+          "Slider load error:",
+          sliderRes.reason?.response?.data || sliderRes.reason?.message,
+        );
+        setSliders([]);
       }
+
+      if (categoryRes.status === "fulfilled") {
+        const apiCategories = categoryRes.value.data.categories || [];
+        setCategories(
+          apiCategories.length > 0 ? apiCategories : fallbackCategories,
+        );
+      } else {
+        console.log(
+          "Category load error:",
+          categoryRes.reason?.response?.data || categoryRes.reason?.message,
+        );
+        setCategories(fallbackCategories);
+      }
+
+      if (productRes.status === "fulfilled") {
+        setProducts(productRes.value.data.products || []);
+      } else {
+        console.log(
+          "Product load error:",
+          productRes.reason?.response?.data || productRes.reason?.message,
+        );
+        setProducts([]);
+      }
+
+      if (galleryRes.status === "fulfilled") {
+        setGallery((galleryRes.value.data.gallery || []).slice(0, 6));
+      } else {
+        console.log(
+          "Gallery load error:",
+          galleryRes.reason?.response?.data || galleryRes.reason?.message,
+        );
+        setGallery([]);
+      }
+
+      setLoading(false);
     };
 
     loadHomeData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (loading) return <Loading text="Preparing website..." />;
@@ -93,6 +137,7 @@ const Home = () => {
         <div className="container intro-grid">
           <div>
             <span className="section-kicker">Nurnobi Bamboo Craft</span>
+
             <h2>All Kinds of Handmade Bamboo Products</h2>
 
             <p>
@@ -108,10 +153,12 @@ const Home = () => {
                 <strong>250+</strong>
                 <span>Artisans Supported</span>
               </div>
+
               <div>
                 <strong>1000+</strong>
                 <span>Families Impacted</span>
               </div>
+
               <div>
                 <strong>2002</strong>
                 <span>Founded</span>
@@ -128,14 +175,17 @@ const Home = () => {
               <h3>Eco Friendly</h3>
               <p>Bamboo-based sustainable handmade products.</p>
             </div>
+
             <div>
               <h3>Women-Led Craft</h3>
               <p>Empowering skilled women and men artisans.</p>
             </div>
+
             <div>
               <h3>Export Ready</h3>
               <p>Manufacturer, exporter, wholesaler and supplier.</p>
             </div>
+
             <div>
               <h3>Ethical Production</h3>
               <p>Community-focused and socially responsible production.</p>
@@ -156,14 +206,17 @@ const Home = () => {
               <h3>Natural Bamboo</h3>
               <p>Crafted from bamboo and eco-friendly natural fibers.</p>
             </div>
+
             <div>
               <h3>Traditional Craft</h3>
               <p>Preserving cultural heritage through skilled handmade work.</p>
             </div>
+
             <div>
               <h3>Modern Design</h3>
               <p>Blending heritage with clean and premium product design.</p>
             </div>
+
             <div>
               <h3>Global Buyers</h3>
               <p>
@@ -222,6 +275,7 @@ const Home = () => {
       <section className="commitment-section">
         <div className="container commitment-card">
           <span className="section-kicker">Our Commitment</span>
+
           <h2>Empowering People, Preserving Heritage</h2>
 
           <ul>

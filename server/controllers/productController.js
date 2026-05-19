@@ -1,86 +1,83 @@
 const fs = require("fs");
+const path = require("path");
 const Product = require("../models/Product");
-const cloudinary = require("../config/cloudinary");
-const deleteCloudinaryImage = require("../utils/deleteCloudinaryImage");
+const Category = require("../models/Category");
 
-const slugify = (text) =>
-  text
-    .toString()
+const makeSlug = (text) => {
+  return text
     .toLowerCase()
     .trim()
-    .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-const uploadProductImages = async (files = []) => {
-  const images = [];
-
-  for (const file of files) {
-    const result = await cloudinary.uploader.upload(file.path, {
-      folder: "nurnobi-bamboo-craft/products",
-    });
-
-    fs.unlinkSync(file.path);
-
-    images.push({
-      url: result.secure_url,
-      public_id: result.public_id,
-    });
-  }
-
-  return images;
+    .replace(/(^-|-$)/g, "");
 };
 
-const getProducts = async (req, res, next) => {
+const makeImageObject = (file) => {
+  if (!file) {
+    return {
+      url: "",
+      public_id: "",
+    };
+  }
+
+  return {
+    url: `/uploads/${file.filename}`,
+    public_id: file.filename,
+  };
+};
+
+const deleteLocalImage = (publicId) => {
+  if (!publicId) return;
+
+  const imagePath = path.join(__dirname, "../uploads", publicId);
+
+  if (fs.existsSync(imagePath)) {
+    fs.unlinkSync(imagePath);
+  }
+};
+
+const getProducts = async (req, res) => {
   try {
-    const {
-      category,
-      search,
-      featured,
-      status,
-      page = 1,
-      limit = 12,
-    } = req.query;
+    const { status, category, featured, limit = 1000 } = req.query;
 
-    const query = {};
-
-    if (category) query.category = category;
-    if (featured === "true") query.isFeatured = true;
+    const filter = {};
 
     if (status && status !== "all") {
-      query.status = status;
-    } else if (!status) {
-      query.status = "active";
+      filter.status = status;
     }
 
-    if (search) {
-      query.$text = { $search: search };
+    if (!status) {
+      filter.status = "active";
     }
 
-    const skip = (Number(page) - 1) * Number(limit);
+    if (category) {
+      filter.category = category;
+    }
 
-    const products = await Product.find(query)
+    if (featured === "true") {
+      filter.isFeatured = true;
+    }
+
+    const products = await Product.find(filter)
       .populate("category", "name slug")
       .sort({ order: 1, createdAt: -1 })
-      .skip(skip)
       .limit(Number(limit));
 
-    const total = await Product.countDocuments(query);
+    const total = await Product.countDocuments(filter);
 
     res.json({
       success: true,
-      count: products.length,
       total,
-      currentPage: Number(page),
-      totalPages: Math.ceil(total / Number(limit)),
       products,
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const getProductBySlug = async (req, res, next) => {
+const getProductBySlug = async (req, res) => {
   try {
     const product = await Product.findOne({
       slug: req.params.slug,
@@ -88,8 +85,10 @@ const getProductBySlug = async (req, res, next) => {
     }).populate("category", "name slug");
 
     if (!product) {
-      res.status(404);
-      throw new Error("Product not found");
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
     }
 
     res.json({
@@ -97,35 +96,18 @@ const getProductBySlug = async (req, res, next) => {
       product,
     });
   } catch (error) {
-    next(error);
-  }
-};
-
-const getProductById = async (req, res, next) => {
-  try {
-    const product = await Product.findById(req.params.id).populate(
-      "category",
-      "name slug",
-    );
-
-    if (!product) {
-      res.status(404);
-      throw new Error("Product not found");
-    }
-
-    res.json({
-      success: true,
-      product,
+    res.status(500).json({
+      success: false,
+      message: error.message,
     });
-  } catch (error) {
-    next(error);
   }
 };
 
-const createProduct = async (req, res, next) => {
+const createProduct = async (req, res) => {
   try {
     const {
       title,
+      slug,
       category,
       productType,
       shortDescription,
@@ -146,14 +128,91 @@ const createProduct = async (req, res, next) => {
       order,
     } = req.body;
 
-    let slug = req.body.slug || slugify(title);
+    if (!title || !category) {
+      return res.status(400).json({
+        success: false,
+        message: "Title and category are required",
+      });
+    }
 
-    const exists = await Product.findOne({ slug });
-    if (exists) slug = `${slug}-${Date.now()}`;
+    const categoryExists = await Category.findById(category);
 
-    const images = await uploadProductImages(req.files || []);
+    if (!categoryExists) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category selected",
+      });
+    }
+
+    const finalSlug = slug ? makeSlug(slug) : makeSlug(title);
+
+    const exists = await Product.findOne({ slug: finalSlug });
+
+    if (exists) {
+      return res.status(400).json({
+        success: false,
+        message: "Product already exists with this slug",
+      });
+    }
+
+    const uploadedImages = req.files?.length
+      ? req.files.map((file) => makeImageObject(file))
+      : [];
 
     const product = await Product.create({
+      title,
+      slug: finalSlug,
+      category,
+      productType: productType || "",
+      shortDescription: shortDescription || "",
+      description: description || "",
+      material: material || "Bamboo",
+      scientificName: scientificName || "Bambusa Vulgaris",
+      origin: origin || "Bangladesh",
+      color: color || "Natural / Any Color",
+      size: size || "As per buyer requirements",
+      moq: moq || "500-3000 pcs",
+      capacity: capacity || "20000 pcs / 90 days handmade",
+      leadTime: leadTime || "60-90 days",
+      priceType: priceType || "FOB",
+      usage: usage || "",
+      buyerRequirement:
+        buyerRequirement ||
+        "Customization available as per buyer requirements.",
+      images: uploadedImages,
+      thumbnail: uploadedImages[0] || { url: "", public_id: "" },
+      isFeatured: isFeatured === "true" || isFeatured === true,
+      status: status || "active",
+      order: Number(order) || 0,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Product created successfully",
+      product,
+    });
+  } catch (error) {
+    console.log("Product create error:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const updateProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    const {
       title,
       slug,
       category,
@@ -171,98 +230,91 @@ const createProduct = async (req, res, next) => {
       priceType,
       usage,
       buyerRequirement,
-      images,
-      thumbnail: images[0] || null,
       isFeatured,
       status,
       order,
-    });
+    } = req.body;
 
-    res.status(201).json({
-      success: true,
-      message: "Product created successfully",
-      product,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+    if (category) {
+      const categoryExists = await Category.findById(category);
 
-const updateProduct = async (req, res, next) => {
-  try {
-    const product = await Product.findById(req.params.id);
+      if (!categoryExists) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid category selected",
+        });
+      }
 
-    if (!product) {
-      res.status(404);
-      throw new Error("Product not found");
+      product.category = category;
     }
 
-    const fields = [
-      "title",
-      "category",
-      "productType",
-      "shortDescription",
-      "description",
-      "material",
-      "scientificName",
-      "origin",
-      "color",
-      "size",
-      "moq",
-      "capacity",
-      "leadTime",
-      "priceType",
-      "usage",
-      "buyerRequirement",
-      "isFeatured",
-      "status",
-      "order",
-    ];
+    if (title !== undefined) product.title = title;
+    if (slug !== undefined && slug) product.slug = makeSlug(slug);
+    if (productType !== undefined) product.productType = productType;
+    if (shortDescription !== undefined)
+      product.shortDescription = shortDescription;
+    if (description !== undefined) product.description = description;
+    if (material !== undefined) product.material = material;
+    if (scientificName !== undefined) product.scientificName = scientificName;
+    if (origin !== undefined) product.origin = origin;
+    if (color !== undefined) product.color = color;
+    if (size !== undefined) product.size = size;
+    if (moq !== undefined) product.moq = moq;
+    if (capacity !== undefined) product.capacity = capacity;
+    if (leadTime !== undefined) product.leadTime = leadTime;
+    if (priceType !== undefined) product.priceType = priceType;
+    if (usage !== undefined) product.usage = usage;
+    if (buyerRequirement !== undefined)
+      product.buyerRequirement = buyerRequirement;
+    if (status !== undefined) product.status = status;
+    if (order !== undefined) product.order = Number(order) || 0;
 
-    fields.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        product[field] = req.body[field];
-      }
-    });
-
-    if (req.body.slug) {
-      product.slug = slugify(req.body.slug);
+    if (isFeatured !== undefined) {
+      product.isFeatured = isFeatured === "true" || isFeatured === true;
     }
 
     if (req.files && req.files.length > 0) {
-      for (const img of product.images) {
-        await deleteCloudinaryImage(img.public_id);
-      }
+      product.images.forEach((img) => {
+        deleteLocalImage(img.public_id);
+      });
 
-      const images = await uploadProductImages(req.files);
-      product.images = images;
-      product.thumbnail = images[0] || null;
+      const uploadedImages = req.files.map((file) => makeImageObject(file));
+
+      product.images = uploadedImages;
+      product.thumbnail = uploadedImages[0] || { url: "", public_id: "" };
     }
 
-    const updatedProduct = await product.save();
+    await product.save();
 
     res.json({
       success: true,
       message: "Product updated successfully",
-      product: updatedProduct,
+      product,
     });
   } catch (error) {
-    next(error);
+    console.log("Product update error:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const deleteProduct = async (req, res, next) => {
+const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
 
     if (!product) {
-      res.status(404);
-      throw new Error("Product not found");
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
     }
 
-    for (const img of product.images) {
-      await deleteCloudinaryImage(img.public_id);
-    }
+    product.images.forEach((img) => {
+      deleteLocalImage(img.public_id);
+    });
 
     await product.deleteOne();
 
@@ -271,14 +323,18 @@ const deleteProduct = async (req, res, next) => {
       message: "Product deleted successfully",
     });
   } catch (error) {
-    next(error);
+    console.log("Product delete error:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
 module.exports = {
   getProducts,
   getProductBySlug,
-  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,

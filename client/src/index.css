@@ -1265,3 +1265,369 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+.product-details-page {
+  background: #fff;
+  color: #151515;
+}
+
+.product-details-page .container {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.product-details-hero {
+  min-height: 360px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+}
+
+.product-details-hero h1 {
+  color: #fff;
+  font-size: clamp(42px, 7vw, 84px);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+
+.raw-section {
+  padding: 55px 0 30px;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 45px;
+}
+
+.section-title h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  color: #333;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.section-title p {
+  color: #555;
+  font-size: 15px;
+}
+
+.details-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.details-text h3 {
+  font-size: 22px;
+  margin-bottom: 18px;
+  color: #222;
+}
+
+.details-text p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #222;
+  margin-bottom: 16px;
+}
+
+.product-spec-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.product-spec-list li {
+  font-size: 15px;
+  line-height: 1.65;
+  color: #111;
+}
+
+.product-spec-list strong {
+  color: #000;
+}
+
+.details-static-image {
+  width: 100%;
+}
+
+.details-static-image img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  display: block;
+}
+
+.details-gallery-section {
+  padding: 45px 0 70px;
+}
+
+.product-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 34px;
+  align-items: stretch;
+}
+
+.details-gallery-card {
+  background: #fff;
+  min-height: 235px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.details-gallery-card img {
+  width: 100%;
+  height: 235px;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.details-gallery-card:hover img {
+  transform: scale(1.04);
+}
+
+.related-products-section {
+  padding: 35px 0 70px;
+  background: #f4f8f2;
+}
+
+.related-product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+
+.related-product-card {
+  background: #fff;
+  padding: 14px;
+  text-decoration: none;
+  color: #111;
+  border: 1px solid #e6eee4;
+}
+
+.related-product-card img {
+  width: 100%;
+  height: 190px;
+  object-fit: contain;
+  display: block;
+}
+
+.related-product-card h3 {
+  margin-top: 12px;
+  font-size: 17px;
+  color: #0d3f25;
+}
+
+.details-error-box {
+  padding: 80px 0;
+  text-align: center;
+}
+
+.details-error-box h2 {
+  margin-bottom: 18px;
+}
+
+.details-error-box a {
+  color: #0d6b3a;
+  font-weight: 700;
+}
+
+@media (max-width: 992px) {
+  .details-info-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .product-gallery-grid,
+  .related-product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .product-details-hero {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .product-gallery-grid,
+  .related-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+
+  .details-gallery-card img {
+    height: 190px;
+  }
+
+  .details-static-image img {
+    height: 240px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-gallery-grid,
+  .related-product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-details-hero {
+    min-height: 220px;
+  }
+
+  .raw-section {
+    padding-top: 35px;
+  }
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 34px;
+  align-items: stretch;
+}
+
+.product-card {
+  height: 100%;
+  min-height: 560px;
+  background: #fff;
+  border: 1px solid #e4e9e1;
+  border-radius: 18px;
+  overflow: hidden;
+  text-decoration: none;
+  color: #0b3f26;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.04);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 45px rgba(0, 0, 0, 0.08);
+}
+
+.product-image {
+  width: 100%;
+  height: 330px;
+  background: #f8faf6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* যদি product image কাটতে না চাও, cover এর বদলে contain use করো */
+/*
+.product-image img {
+  object-fit: contain;
+  padding: 10px;
+}
+*/
+
+.product-info {
+  flex: 1;
+  padding: 26px 28px 28px;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-category {
+  color: #5d6b63;
+  font-size: 18px;
+  line-height: 1.4;
+  margin-bottom: 14px;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-title {
+  color: #003f27;
+  font-size: 25px;
+  line-height: 1.25;
+  font-weight: 800;
+  margin-bottom: 14px;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 62px;
+}
+
+.product-short {
+  color: #5b665f;
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 22px;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-view-btn {
+  margin-top: auto;
+  display: inline-block;
+  color: #d6ad54;
+  font-size: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+@media (max-width: 1100px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .product-card {
+    min-height: 520px;
+  }
+
+  .product-image {
+    height: 300px;
+  }
+}
+
+@media (max-width: 640px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .product-card {
+    min-height: auto;
+  }
+
+  .product-image {
+    height: 280px;
+  }
+
+  .product-info {
+    padding: 22px;
+  }
+
+  .product-title {
+    font-size: 22px;
+    min-height: auto;
+  }
+}

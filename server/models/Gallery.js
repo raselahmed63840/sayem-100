@@ -1,13 +1,5 @@
 const mongoose = require("mongoose");
 
-const imageSchema = new mongoose.Schema(
-  {
-    url: String,
-    public_id: String,
-  },
-  { _id: false },
-);
-
 const gallerySchema = new mongoose.Schema(
   {
     title: {
@@ -16,12 +8,27 @@ const gallerySchema = new mongoose.Schema(
       trim: true,
     },
 
-    image: imageSchema,
-
     type: {
       type: String,
-      enum: ["product", "factory", "artisan", "certificate", "other"],
+      enum: ["product", "factory", "craft", "story", "other"],
       default: "product",
+    },
+
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      default: null,
+    },
+
+    image: {
+      url: {
+        type: String,
+        default: "",
+      },
+      public_id: {
+        type: String,
+        default: "",
+      },
     },
 
     order: {

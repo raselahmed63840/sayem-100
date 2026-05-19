@@ -1,34 +1,15 @@
-const fs = require("fs");
 const Category = require("../models/Category");
 const Product = require("../models/Product");
-const cloudinary = require("../config/cloudinary");
-const deleteCloudinaryImage = require("../utils/deleteCloudinaryImage");
 
-const slugify = (text) =>
-  text
-    .toString()
+const makeSlug = (text) => {
+  return text
     .toLowerCase()
     .trim()
-    .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-const uploadImage = async (file) => {
-  if (!file) return null;
-
-  const result = await cloudinary.uploader.upload(file.path, {
-    folder: "nurnobibamboocraft/categories",
-  });
-
-  fs.unlinkSync(file.path);
-
-  return {
-    url: result.secure_url,
-    public_id: result.public_id,
-  };
+    .replace(/(^-|-$)/g, "");
 };
 
-const getCategories = async (req, res, next) => {
+const getCategories = async (req, res) => {
   try {
     const categories = await Category.find({ isActive: true }).sort({
       order: 1,
@@ -37,45 +18,75 @@ const getCategories = async (req, res, next) => {
 
     res.json({
       success: true,
-      count: categories.length,
       categories,
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const getAllCategoriesAdmin = async (req, res, next) => {
+const getAdminCategories = async (req, res) => {
   try {
-    const categories = await Category.find().sort({ order: 1, createdAt: -1 });
+    const categories = await Category.find({}).sort({
+      order: 1,
+      createdAt: -1,
+    });
 
     res.json({
       success: true,
-      count: categories.length,
       categories,
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const createCategory = async (req, res, next) => {
+const createCategory = async (req, res) => {
   try {
-    const { name, description, order, isActive } = req.body;
+    const { name, slug, description, order, isActive } = req.body;
 
-    let slug = req.body.slug || slugify(name);
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        message: "Category name is required",
+      });
+    }
 
-    const exists = await Category.findOne({ slug });
-    if (exists) slug = `${slug}-${Date.now()}`;
+    const finalSlug = slug ? makeSlug(slug) : makeSlug(name);
 
-    const image = await uploadImage(req.file);
+    const exists = await Category.findOne({ slug: finalSlug });
+
+    if (exists) {
+      return res.status(400).json({
+        success: false,
+        message: "Category already exists",
+      });
+    }
+
+    let image = {
+      url: "",
+      public_id: "",
+    };
+
+    if (req.file) {
+      image = {
+        url: `/uploads/${req.file.filename}`,
+        public_id: req.file.filename,
+      };
+    }
 
     const category = await Category.create({
       name,
-      slug,
-      description,
-      order,
-      isActive,
+      slug: finalSlug,
+      description: description || "",
+      order: Number(order) || 0,
+      isActive: isActive === "false" ? false : true,
       image,
     });
 
@@ -85,51 +96,63 @@ const createCategory = async (req, res, next) => {
       category,
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const updateCategory = async (req, res, next) => {
+const updateCategory = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
 
     if (!category) {
-      res.status(404);
-      throw new Error("Category not found");
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
     }
 
-    const { name, description, order, isActive } = req.body;
+    const { name, slug, description, order, isActive } = req.body;
 
-    if (name) category.name = name;
-    if (req.body.slug) category.slug = slugify(req.body.slug);
-    if (description !== undefined) category.description = description;
-    if (order !== undefined) category.order = order;
-    if (isActive !== undefined) category.isActive = isActive;
+    category.name = name || category.name;
+    category.slug = slug ? makeSlug(slug) : category.slug;
+    category.description = description ?? category.description;
+    category.order = order !== undefined ? Number(order) : category.order;
+    category.isActive = isActive === "false" ? false : true;
 
     if (req.file) {
-      await deleteCloudinaryImage(category.image?.public_id);
-      category.image = await uploadImage(req.file);
+      category.image = {
+        url: `/uploads/${req.file.filename}`,
+        public_id: req.file.filename,
+      };
     }
 
-    const updatedCategory = await category.save();
+    await category.save();
 
     res.json({
       success: true,
       message: "Category updated successfully",
-      category: updatedCategory,
+      category,
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const deleteCategory = async (req, res, next) => {
+const deleteCategory = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
 
     if (!category) {
-      res.status(404);
-      throw new Error("Category not found");
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
     }
 
     const productCount = await Product.countDocuments({
@@ -137,13 +160,12 @@ const deleteCategory = async (req, res, next) => {
     });
 
     if (productCount > 0) {
-      res.status(400);
-      throw new Error(
-        "Cannot delete category. Products exist under this category.",
-      );
+      return res.status(400).json({
+        success: false,
+        message: "This category has products. Delete products first.",
+      });
     }
 
-    await deleteCloudinaryImage(category.image?.public_id);
     await category.deleteOne();
 
     res.json({
@@ -151,13 +173,16 @@ const deleteCategory = async (req, res, next) => {
       message: "Category deleted successfully",
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
 module.exports = {
   getCategories,
-  getAllCategoriesAdmin,
+  getAdminCategories,
   createCategory,
   updateCategory,
   deleteCategory,

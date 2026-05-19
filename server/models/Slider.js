@@ -1,13 +1,5 @@
 const mongoose = require("mongoose");
 
-const imageSchema = new mongoose.Schema(
-  {
-    url: String,
-    public_id: String,
-  },
-  { _id: false },
-);
-
 const sliderSchema = new mongoose.Schema(
   {
     title: {
@@ -21,7 +13,10 @@ const sliderSchema = new mongoose.Schema(
       default: "",
     },
 
-    image: imageSchema,
+    description: {
+      type: String,
+      default: "",
+    },
 
     buttonText: {
       type: String,
@@ -31,6 +26,17 @@ const sliderSchema = new mongoose.Schema(
     buttonLink: {
       type: String,
       default: "/products",
+    },
+
+    image: {
+      url: {
+        type: String,
+        default: "",
+      },
+      public_id: {
+        type: String,
+        default: "",
+      },
     },
 
     order: {

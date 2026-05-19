@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import getImageUrl from "../utils/imageHelper";
 
 const defaultForm = {
   name: "",
@@ -15,12 +16,17 @@ const AdminCategories = () => {
   const [image, setImage] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const loadCategories = async () => {
     try {
       const { data } = await api.get("/categories/admin/all");
       setCategories(data.categories || []);
-    } catch {
+    } catch (error) {
+      console.log(
+        "Category load error:",
+        error.response?.data || error.message,
+      );
       setCategories([]);
     }
   };
@@ -42,6 +48,9 @@ const AdminCategories = () => {
     setForm(defaultForm);
     setImage(null);
     setEditingId(null);
+
+    const fileInput = document.getElementById("categoryImageInput");
+    if (fileInput) fileInput.value = "";
   };
 
   const handleEdit = (category) => {
@@ -53,6 +62,8 @@ const AdminCategories = () => {
       order: category.order || 0,
       isActive: category.isActive ?? true,
     });
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id) => {
@@ -60,6 +71,7 @@ const AdminCategories = () => {
 
     try {
       await api.delete(`/categories/${id}`);
+      setStatus("Category deleted successfully.");
       loadCategories();
     } catch (error) {
       alert(error.response?.data?.message || "Delete failed");
@@ -68,13 +80,16 @@ const AdminCategories = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus("Saving...");
+    setStatus("");
+    setLoading(true);
 
     const formData = new FormData();
 
-    Object.keys(form).forEach((key) => {
-      formData.append(key, form[key]);
-    });
+    formData.append("name", form.name);
+    formData.append("slug", form.slug);
+    formData.append("description", form.description);
+    formData.append("order", form.order);
+    formData.append("isActive", form.isActive);
 
     if (image) {
       formData.append("image", image);
@@ -82,16 +97,31 @@ const AdminCategories = () => {
 
     try {
       if (editingId) {
-        await api.put(`/categories/${editingId}`, formData);
+        await api.put(`/categories/${editingId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       } else {
-        await api.post("/categories", formData);
+        await api.post("/categories", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       }
 
-      setStatus("Category saved successfully.");
+      setStatus(
+        editingId
+          ? "Category updated successfully."
+          : "Category saved successfully.",
+      );
+
       resetForm();
       loadCategories();
     } catch (error) {
+      console.log(
+        "Category save error:",
+        error.response?.data || error.message,
+      );
       setStatus(error.response?.data?.message || "Category save failed.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -113,6 +143,7 @@ const AdminCategories = () => {
             placeholder="Category Name"
             required
           />
+
           <input
             name="slug"
             value={form.slug}
@@ -149,14 +180,19 @@ const AdminCategories = () => {
         </div>
 
         <input
+          id="categoryImageInput"
           type="file"
           accept="image/*"
-          onChange={(e) => setImage(e.target.files[0])}
+          onChange={(e) => setImage(e.target.files?.[0] || null)}
         />
 
         <div className="admin-actions">
-          <button className="admin-btn" type="submit">
-            {editingId ? "Update Category" : "Add Category"}
+          <button className="admin-btn" type="submit" disabled={loading}>
+            {loading
+              ? "Saving..."
+              : editingId
+                ? "Update Category"
+                : "Add Category"}
           </button>
 
           {editingId && (
@@ -164,6 +200,7 @@ const AdminCategories = () => {
               className="admin-btn light"
               type="button"
               onClick={resetForm}
+              disabled={loading}
             >
               Cancel Edit
             </button>
@@ -187,25 +224,41 @@ const AdminCategories = () => {
           </thead>
 
           <tbody>
-            {categories.map((cat) => (
-              <tr key={cat._id}>
-                <td>
-                  <img
-                    className="admin-thumb"
-                    src={cat.image?.url || "/logo.png"}
-                    alt={cat.name}
-                  />
-                </td>
-                <td>{cat.name}</td>
-                <td>{cat.slug}</td>
-                <td>{cat.isActive ? "Active" : "Inactive"}</td>
-                <td>{cat.order}</td>
-                <td>
-                  <button onClick={() => handleEdit(cat)}>Edit</button>
-                  <button onClick={() => handleDelete(cat._id)}>Delete</button>
-                </td>
+            {categories.length === 0 ? (
+              <tr>
+                <td colSpan="6">No category found.</td>
               </tr>
-            ))}
+            ) : (
+              categories.map((cat) => (
+                <tr key={cat._id}>
+                  <td>
+                    <img
+                      className="admin-thumb"
+                      src={getImageUrl(cat.image)}
+                      alt={cat.name}
+                      onError={(e) => {
+                        e.currentTarget.src = "/logo.png";
+                      }}
+                    />
+                  </td>
+
+                  <td>{cat.name}</td>
+                  <td>{cat.slug}</td>
+                  <td>{cat.isActive ? "Active" : "Inactive"}</td>
+                  <td>{cat.order}</td>
+
+                  <td>
+                    <button type="button" onClick={() => handleEdit(cat)}>
+                      Edit
+                    </button>
+
+                    <button type="button" onClick={() => handleDelete(cat._id)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
