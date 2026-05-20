@@ -1,49 +1,64 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
+import api from "../api/axios";
 import logo from "../assets/logo.png";
 
+const fallbackCategories = [
+  { _id: "bamboo-furniture", name: "Bamboo Furniture" },
+  { _id: "bamboo-home-decor", name: "Bamboo Home Decor" },
+  { _id: "bamboo-kitchen-products", name: "Bamboo Kitchen Products" },
+  { _id: "handmade-bamboo-crafts", name: "Handmade Bamboo Crafts" },
+  { _id: "eco-lifestyle-products", name: "Eco Lifestyle Products" },
+  { _id: "gift-items", name: "Gift Items" },
+];
+
 const Navbar = () => {
-  const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [productOpen, setProductOpen] = useState(false);
-  const [sticky, setSticky] = useState(false);
-  const dropdownRef = useRef(null);
+  const [categories, setCategories] = useState([]);
+  const navRef = useRef(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setSticky(window.scrollY > 40);
+    const loadCategories = async () => {
+      try {
+        const { data } = await api.get("/categories");
+
+        const categoryList = Array.isArray(data)
+          ? data
+          : data.categories || data.data || [];
+
+        setCategories(categoryList);
+      } catch (error) {
+        console.log("Navbar categories load failed:", error.message);
+        setCategories([]);
+      }
     };
 
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
+    const closeOutside = (event) => {
+      if (navRef.current && !navRef.current.contains(event.target)) {
+        setMenuOpen(false);
         setProductOpen(false);
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    document.addEventListener("mousedown", closeOutside);
+    return () => document.removeEventListener("mousedown", closeOutside);
   }, []);
 
-  const closeAllMenus = () => {
-    setOpen(false);
+  const finalCategories =
+    categories.length > 0 ? categories : fallbackCategories;
+
+  const closeMenu = () => {
+    setMenuOpen(false);
     setProductOpen(false);
-  };
-
-  const toggleMobileMenu = () => {
-    setOpen((prev) => !prev);
-  };
-
-  const toggleProductMenu = () => {
-    setProductOpen((prev) => !prev);
   };
 
   return (
     <header className="site-header">
-      {/* Top strip */}
       <div className="top-strip">
         <div className="container top-strip-inner">
           <p>Manufacturer, Exporter, Wholesaler & Supplier</p>
@@ -53,11 +68,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Sticky nav only */}
-      <nav className={`main-nav ${sticky ? "is-sticky" : ""}`}>
+      <nav className="main-nav" ref={navRef}>
         <div className="container nav-inner">
-          {/* Logo + Brand */}
-          <Link to="/" className="nav-brand" onClick={closeAllMenus}>
+          <Link to="/" className="nav-brand" onClick={closeMenu}>
             <img src={logo} alt="Nurnobi Bamboo Craft" className="brand-logo" />
             <div className="brand-text">
               <h1>Nurnobi Bamboo Craft</h1>
@@ -65,76 +78,63 @@ const Navbar = () => {
             </div>
           </Link>
 
-          {/* Mobile menu button */}
           <button
-            className="menu-btn"
             type="button"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle menu"
+            className={`menu-btn ${menuOpen ? "active" : ""}`}
+            onClick={() => setMenuOpen((prev) => !prev)}
+            aria-label="Open menu"
           >
-            {open ? "✕" : "☰"}
+            {menuOpen ? "×" : "⋮"}
           </button>
 
-          {/* Nav links */}
-          <div className={`nav-links ${open ? "show" : ""}`}>
-            <NavLink to="/" onClick={closeAllMenus}>
+          <div className={`nav-links ${menuOpen ? "show" : ""}`}>
+            <NavLink to="/" onClick={closeMenu}>
               Home
             </NavLink>
 
-            <NavLink to="/about" onClick={closeAllMenus}>
+            <NavLink to="/about" onClick={closeMenu}>
               About Us
             </NavLink>
 
-            <div
-              className={`nav-dropdown ${productOpen ? "open" : ""}`}
-              ref={dropdownRef}
-            >
-              <button type="button" onClick={toggleProductMenu}>
+            <div className={`nav-dropdown ${productOpen ? "open" : ""}`}>
+              <button
+                type="button"
+                onClick={() => setProductOpen((prev) => !prev)}
+              >
                 Products <span className="caret">▾</span>
               </button>
 
               <div className="dropdown-menu">
-                <Link to="/products" onClick={closeAllMenus}>
+                <Link to="/products" onClick={closeMenu}>
                   All Products
                 </Link>
-                <Link
-                  to="/products/category/bamboo-serving-tray"
-                  onClick={closeAllMenus}
-                >
-                  Bamboo Serving Tray
-                </Link>
-                <Link
-                  to="/products/category/bamboo-basket"
-                  onClick={closeAllMenus}
-                >
-                  Bamboo Basket
-                </Link>
-                <Link
-                  to="/products/category/home-decor"
-                  onClick={closeAllMenus}
-                >
-                  Home Decor
-                </Link>
+
+                {finalCategories.map((cat) => (
+                  <Link
+                    key={cat._id || cat.slug || cat.name}
+                    to={`/products?category=${cat._id || cat.slug}`}
+                    onClick={closeMenu}
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
               </div>
             </div>
 
-            <NavLink to="/gallery" onClick={closeAllMenus}>
+            <NavLink to="/gallery" onClick={closeMenu}>
               Gallery
             </NavLink>
 
-            <NavLink to="/sustainability" onClick={closeAllMenus}>
+            <NavLink to="/sustainability" onClick={closeMenu}>
               Sustainability
             </NavLink>
 
-            <NavLink to="/contact" onClick={closeAllMenus}>
+            <NavLink to="/contact" onClick={closeMenu}>
               Contact
             </NavLink>
           </div>
         </div>
       </nav>
-
-      {/* spacer for sticky nav */}
-      {sticky && <div className="nav-spacer"></div>}
     </header>
   );
 };

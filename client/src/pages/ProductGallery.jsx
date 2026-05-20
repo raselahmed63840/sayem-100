@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-
+import { useParams, useSearchParams } from "react-router-dom";
 import api from "../api/axios";
 import SEO from "../components/SEO";
 import ProductCard from "../components/ProductCard";
@@ -8,22 +7,29 @@ import Loading from "../components/Loading";
 
 const ProductGallery = () => {
   const { categoryId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const queryCategory = searchParams.get("category") || "";
+  const initialCategory = categoryId || queryCategory || "";
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState(categoryId || "");
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setActiveCategory(categoryId || "");
-  }, [categoryId]);
+    setActiveCategory(categoryId || queryCategory || "");
+  }, [categoryId, queryCategory]);
 
   useEffect(() => {
     const loadCategories = async () => {
       try {
         const { data } = await api.get("/categories");
-        setCategories(data.categories || []);
+        const categoryList = Array.isArray(data)
+          ? data
+          : data.categories || data.data || [];
+        setCategories(categoryList);
       } catch {
         setCategories([]);
       }
@@ -44,7 +50,7 @@ const ProductGallery = () => {
         if (search.trim()) params.set("search", search.trim());
 
         const { data } = await api.get(`/products?${params.toString()}`);
-        setProducts(data.products || []);
+        setProducts(data.products || data.data || []);
       } catch {
         setProducts([]);
       } finally {
@@ -55,61 +61,74 @@ const ProductGallery = () => {
     loadProducts();
   }, [activeCategory, search]);
 
+  const handleCategoryChange = (value) => {
+    setActiveCategory(value);
+
+    if (value) {
+      setSearchParams({ category: value });
+    } else {
+      setSearchParams({});
+    }
+  };
+
   return (
-    <section className="page-section">
+    <>
       <SEO
         title="Bamboo Products | Nurnobi Bamboo Craft"
-        description="Browse eco-friendly handmade bamboo products including furniture, home decor, kitchen products, crafts and gift items."
+        description="Explore eco-friendly handmade bamboo products from Bangladesh."
       />
 
-      <div className="container">
-        <div className="page-title">
-          <span className="section-kicker">Products</span>
+      <section className="page-hero">
+        <div className="container">
+          <p>Products</p>
           <h1>Eco-Friendly Handmade Bamboo Products</h1>
-          <p>
+          <span>
             Explore bamboo furniture, home décor, kitchen products, storage
             solutions, handicrafts, souvenirs and gift items.
-          </p>
+          </span>
         </div>
+      </section>
 
-        <div className="filter-bar">
-          <input
-            type="text"
-            placeholder="Search bamboo products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      <section className="section">
+        <div className="container">
+          <div className="product-filter-row">
+            <input
+              type="text"
+              placeholder="Search bamboo products..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
 
-          <select
-            value={activeCategory}
-            onChange={(e) => setActiveCategory(e.target.value)}
-          >
-            <option value="">All Categories</option>
+            <select
+              value={activeCategory}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+            >
+              <option value="">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat._id || cat.slug} value={cat._id || cat.slug}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            {categories.map((cat) => (
-              <option value={cat._id} key={cat._id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+          {loading ? (
+            <Loading />
+          ) : products.length > 0 ? (
+            <div className="product-grid">
+              {products.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <h2>No products found</h2>
+              <p>Add bamboo products from admin panel.</p>
+            </div>
+          )}
         </div>
-
-        {loading ? (
-          <Loading text="Loading products..." />
-        ) : products.length > 0 ? (
-          <div className="product-grid">
-            {products.map((product) => (
-              <ProductCard product={product} key={product._id} />
-            ))}
-          </div>
-        ) : (
-          <div className="empty-state">
-            <h2>No products found</h2>
-            <p>Add bamboo products from admin panel.</p>
-          </div>
-        )}
-      </div>
-    </section>
+      </section>
+    </>
   );
 };
 
