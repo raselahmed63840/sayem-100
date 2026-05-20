@@ -1,77 +1,49 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import api from "../api/axios";
 import logo from "../assets/logo.png";
-
-const fallbackCategories = [
-  {
-    _id: "bamboo-furniture",
-    name: "Bamboo Furniture",
-    slug: "bamboo-furniture",
-  },
-  {
-    _id: "bamboo-home-decor",
-    name: "Bamboo Home Decor",
-    slug: "bamboo-home-decor",
-  },
-  {
-    _id: "bamboo-kitchen-products",
-    name: "Bamboo Kitchen Products",
-    slug: "bamboo-kitchen-products",
-  },
-  {
-    _id: "handmade-bamboo-crafts",
-    name: "Handmade Bamboo Crafts",
-    slug: "handmade-bamboo-crafts",
-  },
-  {
-    _id: "eco-lifestyle-products",
-    name: "Eco Lifestyle Products",
-    slug: "eco-lifestyle-products",
-  },
-  { _id: "gift-items", name: "Gift Items", slug: "gift-items" },
-];
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [productOpen, setProductOpen] = useState(false);
-  const [categories, setCategories] = useState([]);
-  const [isSticky, setIsSticky] = useState(false);
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const { data } = await api.get("/categories");
-        setCategories(data.categories || []);
-      } catch {
-        setCategories([]);
-      }
-    };
-
-    loadCategories();
-  }, []);
+  const [sticky, setSticky] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsSticky(window.scrollY > 42);
+      setSticky(window.scrollY > 40);
+    };
+
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setProductOpen(false);
+      }
     };
 
     window.addEventListener("scroll", handleScroll);
-    handleScroll();
+    document.addEventListener("mousedown", handleClickOutside);
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  const finalCategories =
-    categories.length > 0 ? categories : fallbackCategories;
-
-  const closeMenu = () => {
+  const closeAllMenus = () => {
     setOpen(false);
     setProductOpen(false);
   };
 
+  const toggleMobileMenu = () => {
+    setOpen((prev) => !prev);
+  };
+
+  const toggleProductMenu = () => {
+    setProductOpen((prev) => !prev);
+  };
+
   return (
     <header className="site-header">
+      {/* Top strip */}
       <div className="top-strip">
         <div className="container top-strip-inner">
           <p>Manufacturer, Exporter, Wholesaler & Supplier</p>
@@ -81,79 +53,88 @@ const Navbar = () => {
         </div>
       </div>
 
-      <nav className={`main-nav ${isSticky ? "is-sticky" : ""}`}>
+      {/* Sticky nav only */}
+      <nav className={`main-nav ${sticky ? "is-sticky" : ""}`}>
         <div className="container nav-inner">
-          <Link to="/" className="nav-brand" onClick={closeMenu}>
-            <img src={logo} alt="Nurnobi Bamboo Craft" />
-            <div>
+          {/* Logo + Brand */}
+          <Link to="/" className="nav-brand" onClick={closeAllMenus}>
+            <img src={logo} alt="Nurnobi Bamboo Craft" className="brand-logo" />
+            <div className="brand-text">
               <h1>Nurnobi Bamboo Craft</h1>
               <span>Eco-Friendly Bamboo Craft Brand from Bangladesh</span>
             </div>
           </Link>
 
+          {/* Mobile menu button */}
           <button
             className="menu-btn"
             type="button"
-            onClick={() => setOpen((prev) => !prev)}
+            onClick={toggleMobileMenu}
             aria-label="Toggle menu"
           >
             {open ? "✕" : "☰"}
           </button>
 
+          {/* Nav links */}
           <div className={`nav-links ${open ? "show" : ""}`}>
-            <NavLink to="/" onClick={closeMenu}>
+            <NavLink to="/" onClick={closeAllMenus}>
               Home
             </NavLink>
 
-            <NavLink to="/about" onClick={closeMenu}>
+            <NavLink to="/about" onClick={closeAllMenus}>
               About Us
             </NavLink>
 
-            <div className={`nav-dropdown ${productOpen ? "open" : ""}`}>
-              <button
-                type="button"
-                onClick={() => setProductOpen((prev) => !prev)}
-              >
-                Products ▾
+            <div
+              className={`nav-dropdown ${productOpen ? "open" : ""}`}
+              ref={dropdownRef}
+            >
+              <button type="button" onClick={toggleProductMenu}>
+                Products <span className="caret">▾</span>
               </button>
 
-              <div className="dropdown-menu wide-menu">
-                <Link to="/product-description" onClick={closeMenu}>
-                  Raw Material & Product Description
-                </Link>
-
-                <Link to="/products" onClick={closeMenu}>
+              <div className="dropdown-menu">
+                <Link to="/products" onClick={closeAllMenus}>
                   All Products
                 </Link>
-
-                {finalCategories.map((cat) => (
-                  <Link
-                    key={cat._id}
-                    to={`/products?category=${cat.slug || cat._id}`}
-                    onClick={closeMenu}
-                  >
-                    {cat.name}
-                  </Link>
-                ))}
+                <Link
+                  to="/products/category/bamboo-serving-tray"
+                  onClick={closeAllMenus}
+                >
+                  Bamboo Serving Tray
+                </Link>
+                <Link
+                  to="/products/category/bamboo-basket"
+                  onClick={closeAllMenus}
+                >
+                  Bamboo Basket
+                </Link>
+                <Link
+                  to="/products/category/home-decor"
+                  onClick={closeAllMenus}
+                >
+                  Home Decor
+                </Link>
               </div>
             </div>
 
-            <NavLink to="/gallery" onClick={closeMenu}>
+            <NavLink to="/gallery" onClick={closeAllMenus}>
               Gallery
             </NavLink>
 
-            <NavLink to="/sustainability" onClick={closeMenu}>
+            <NavLink to="/sustainability" onClick={closeAllMenus}>
               Sustainability
             </NavLink>
 
-            <NavLink to="/contact" onClick={closeMenu}>
+            <NavLink to="/contact" onClick={closeAllMenus}>
               Contact
             </NavLink>
           </div>
         </div>
       </nav>
 
-      {isSticky && <div className="nav-spacer" />}
+      {/* spacer for sticky nav */}
+      {sticky && <div className="nav-spacer"></div>}
     </header>
   );
 };
