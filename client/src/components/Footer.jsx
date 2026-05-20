@@ -31,7 +31,7 @@ const Footer = () => {
         <div>
           <h3>Contact</h3>
           <p>Email: contact@nurnobibamboocraft.com</p>
-          <p>Phone: +880 1863-840408</p>
+          <p>Phone: +880 1719-632705</p>
           <p>Origin: Bangladesh</p>
         </div>
       </div>

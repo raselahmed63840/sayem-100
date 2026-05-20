@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { optimizeCloudinaryImage } from "../utils/imageHelper";
+import { getImageUrl } from "../utils/imageHelper";
 
 const HeroSlider = ({ slides = [] }) => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -12,25 +12,27 @@ const HeroSlider = ({ slides = [] }) => {
   useEffect(() => {
     if (activeSlides.length <= 1) return;
 
-    const interval = setInterval(() => {
+    const timer = setInterval(() => {
       setActiveIndex((prev) =>
         prev === activeSlides.length - 1 ? 0 : prev + 1,
       );
-    }, 4000);
+    }, 4500);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(timer);
   }, [activeSlides.length]);
 
   if (activeSlides.length === 0) {
     return (
-      <section className="hero-slider">
-        <div className="hero-slide hero-fallback-bg">
-          <div className="hero-dark-overlay" />
-          <div className="hero-slide-content">
+      <section className="nb-hero-slider">
+        <div className="nb-hero-fallback">
+          <div className="nb-hero-overlay" />
+
+          <div className="nb-hero-content">
             <p>Nurnobi Bamboo Craft</p>
             <h1>All Kinds of Handmade Bamboo Products</h1>
             <span>Eco-friendly handmade bamboo products from Bangladesh.</span>
-            <Link to="/products" className="hero-btn">
+
+            <Link to="/products" className="nb-hero-btn">
               Explore Products
             </Link>
           </div>
@@ -39,49 +41,50 @@ const HeroSlider = ({ slides = [] }) => {
     );
   }
 
-  const slide = activeSlides[activeIndex];
-
   return (
-    <section className="hero-slider">
-      <div className="hero-slide">
-        <img
-          src={optimizeCloudinaryImage(slide.image, {
-            width: 1920,
-            height: 650,
-            fallback: "/logo.png",
-          })}
-          alt={slide.title || "Nurnobi Bamboo Craft Slider"}
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-        />
+    <section className="nb-hero-slider">
+      {activeSlides.map((slide, index) => (
+        <div
+          className={`nb-hero-slide ${index === activeIndex ? "active" : ""}`}
+          key={slide._id || index}
+        >
+          <img
+            className="nb-hero-image"
+            src={getImageUrl(slide.image)}
+            alt={slide.title || "Nurnobi Bamboo Craft"}
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
 
-        <div className="hero-dark-overlay" />
+          <div className="nb-hero-overlay" />
 
-        <div className="hero-slide-content">
-          <p>{slide.subtitle || "Nurnobi Bamboo Craft"}</p>
+          <div className="nb-hero-content">
+            <p>{slide.subtitle || "Nurnobi Bamboo Craft"}</p>
 
-          <h1>{slide.title || "Handmade Bamboo Craft Products"}</h1>
+            <h1>{slide.title || "Handmade Bamboo Products"}</h1>
 
-          <span>
-            {slide.description ||
-              "Eco-friendly bamboo products made with natural materials, traditional craftsmanship and modern design."}
-          </span>
+            <span>
+              {slide.description ||
+                "Eco-friendly bamboo products made with natural materials, traditional craftsmanship and modern design."}
+            </span>
 
-          <Link to={slide.buttonLink || "/products"} className="hero-btn">
-            {slide.buttonText || "Explore Products"}
-          </Link>
+            <Link to={slide.buttonLink || "/products"} className="nb-hero-btn">
+              {slide.buttonText || "Explore Products"}
+            </Link>
+          </div>
         </div>
-      </div>
+      ))}
 
       {activeSlides.length > 1 && (
-        <div className="hero-dots">
-          {activeSlides.map((item, index) => (
+        <div className="nb-hero-dots">
+          {activeSlides.map((slide, index) => (
             <button
-              key={item._id || index}
+              key={slide._id || index}
               type="button"
               className={index === activeIndex ? "active" : ""}
               onClick={() => setActiveIndex(index)}
+              aria-label={`Slider ${index + 1}`}
             />
           ))}
         </div>

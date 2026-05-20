@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import api from "../api/axios";
+import logo from "../assets/logo.png";
 
 const fallbackCategories = [
   { _id: "bamboo-furniture", name: "Bamboo Furniture" },
@@ -44,7 +45,7 @@ const Navbar = () => {
 
       <div className="container logo-row">
         <Link to="/" className="brand" onClick={closeMenu}>
-          <img src="/logo.png" alt="Nurnobi Bamboo Craft" />
+          <img src={logo} alt="Nurnobi Bamboo Craft" />
           <div>
             <h1>Nurnobi Bamboo Craft</h1>
             <p>Manufacturer, Exporter, Wholesaler & Supplier</p>
