@@ -10,12 +10,13 @@ const ProductGallery = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const queryCategory = searchParams.get("category") || "";
-  const initialCategory = categoryId || queryCategory || "";
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState(initialCategory);
+  const [activeCategory, setActiveCategory] = useState(
+    categoryId || queryCategory || "",
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,18 +79,18 @@ const ProductGallery = () => {
         description="Explore eco-friendly handmade bamboo products from Bangladesh."
       />
 
-      <section className="page-hero">
+      <section className="page-hero products-page-hero">
         <div className="container">
-          <p>Products</p>
+          <span className="section-kicker">Products</span>
           <h1>Eco-Friendly Handmade Bamboo Products</h1>
-          <span>
+          <p>
             Explore bamboo furniture, home décor, kitchen products, storage
             solutions, handicrafts, souvenirs and gift items.
-          </span>
+          </p>
         </div>
       </section>
 
-      <section className="section">
+      <section className="page-section product-list-section">
         <div className="container">
           <div className="product-filter-row">
             <input
@@ -104,6 +105,7 @@ const ProductGallery = () => {
               onChange={(e) => handleCategoryChange(e.target.value)}
             >
               <option value="">All Categories</option>
+
               {categories.map((cat) => (
                 <option key={cat._id || cat.slug} value={cat._id || cat.slug}>
                   {cat.name}
@@ -113,7 +115,7 @@ const ProductGallery = () => {
           </div>
 
           {loading ? (
-            <Loading />
+            <Loading text="Loading products..." />
           ) : products.length > 0 ? (
             <div className="product-grid">
               {products.map((product) => (

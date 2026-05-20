@@ -4,12 +4,32 @@ import api from "../api/axios";
 import logo from "../assets/logo.png";
 
 const fallbackCategories = [
-  { _id: "bamboo-furniture", name: "Bamboo Furniture" },
-  { _id: "bamboo-home-decor", name: "Bamboo Home Decor" },
-  { _id: "bamboo-kitchen-products", name: "Bamboo Kitchen Products" },
-  { _id: "handmade-bamboo-crafts", name: "Handmade Bamboo Crafts" },
-  { _id: "eco-lifestyle-products", name: "Eco Lifestyle Products" },
-  { _id: "gift-items", name: "Gift Items" },
+  {
+    _id: "bamboo-furniture",
+    name: "Bamboo Furniture",
+    slug: "bamboo-furniture",
+  },
+  {
+    _id: "bamboo-home-decor",
+    name: "Bamboo Home Decor",
+    slug: "bamboo-home-decor",
+  },
+  {
+    _id: "bamboo-kitchen-products",
+    name: "Bamboo Kitchen Products",
+    slug: "bamboo-kitchen-products",
+  },
+  {
+    _id: "handmade-bamboo-crafts",
+    name: "Handmade Bamboo Crafts",
+    slug: "handmade-bamboo-crafts",
+  },
+  {
+    _id: "eco-lifestyle-products",
+    name: "Eco Lifestyle Products",
+    slug: "eco-lifestyle-products",
+  },
+  { _id: "gift-items", name: "Gift Items", slug: "gift-items" },
 ];
 
 const Navbar = () => {
@@ -22,14 +42,12 @@ const Navbar = () => {
     const loadCategories = async () => {
       try {
         const { data } = await api.get("/categories");
-
         const categoryList = Array.isArray(data)
           ? data
           : data.categories || data.data || [];
 
         setCategories(categoryList);
-      } catch (error) {
-        console.log("Navbar categories load failed:", error.message);
+      } catch {
         setCategories([]);
       }
     };
@@ -38,15 +56,15 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    const closeOutside = (event) => {
+    const handleClickOutside = (event) => {
       if (navRef.current && !navRef.current.contains(event.target)) {
         setMenuOpen(false);
         setProductOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", closeOutside);
-    return () => document.removeEventListener("mousedown", closeOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const finalCategories =
