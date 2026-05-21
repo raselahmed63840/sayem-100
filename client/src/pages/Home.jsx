@@ -8,6 +8,7 @@ import CategoryCard from "../components/CategoryCard";
 import ProductCard from "../components/ProductCard";
 import GalleryCard from "../components/GalleryCard";
 import Loading from "../components/Loading";
+import ProductFeatures from "../components/ProductFeatures";
 
 const fallbackCategories = [
   {
@@ -132,6 +133,8 @@ const Home = () => {
       <SEO />
 
       <HeroSlider slides={sliders} />
+
+      <ProductFeatures />
 
       <section className="intro-section">
         <div className="container intro-grid">
