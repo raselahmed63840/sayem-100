@@ -130,7 +130,7 @@ const Navbar = () => {
                 {finalCategories.map((cat) => (
                   <Link
                     key={cat._id || cat.slug || cat.name}
-                    to={`/products/${cat._id || cat.slug}`}
+                    to={`/products?category=${cat._id || cat.slug}`}
                     onClick={closeMenu}
                   >
                     {cat.name}
