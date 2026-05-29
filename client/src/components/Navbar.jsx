@@ -77,14 +77,14 @@ const Navbar = () => {
 
   return (
     <header className="site-header">
-      <div className="top-strip">
+      {/* <div className="top-strip">
         <div className="container top-strip-inner">
           <p>Manufacturer, Exporter, Wholesaler & Supplier</p>
           <a href="mailto:contact@nurnobibamboocraft.com">
             contact@nurnobibamboocraft.com
           </a>
         </div>
-      </div>
+      </div> */}
 
       <nav className="main-nav" ref={navRef}>
         <div className="container nav-inner">
@@ -94,7 +94,7 @@ const Navbar = () => {
               <h1>Nurnobi Bamboo Craft</h1>
               <span>Eco-Friendly Bamboo Craft Brand from Bangladesh</span>
             </div>
-          </Link>
+          </Link> 
 
           <button
             type="button"

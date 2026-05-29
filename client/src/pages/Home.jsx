@@ -5,7 +5,6 @@ import api from "../api/axios";
 import SEO from "../components/SEO";
 import HeroSlider from "../components/HeroSlider";
 import CategoryCard from "../components/CategoryCard";
-import ProductCard from "../components/ProductCard";
 import GalleryCard from "../components/GalleryCard";
 import Loading from "../components/Loading";
 import ProductFeatures from "../components/ProductFeatures";
@@ -51,7 +50,6 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [sliders, setSliders] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [products, setProducts] = useState([]);
   const [gallery, setGallery] = useState([]);
 
   useEffect(() => {
@@ -60,13 +58,11 @@ const Home = () => {
     const loadHomeData = async () => {
       setLoading(true);
 
-      const [sliderRes, categoryRes, productRes, galleryRes] =
-        await Promise.allSettled([
-          api.get("/sliders"),
-          api.get("/categories"),
-          api.get("/products?featured=true&limit=6"),
-          api.get("/gallery"),
-        ]);
+      const [sliderRes, categoryRes, galleryRes] = await Promise.allSettled([
+        api.get("/sliders"),
+        api.get("/categories"),
+        api.get("/gallery"),
+      ]);
 
       if (!isMounted) return;
 
@@ -91,16 +87,6 @@ const Home = () => {
           categoryRes.reason?.response?.data || categoryRes.reason?.message,
         );
         setCategories(fallbackCategories);
-      }
-
-      if (productRes.status === "fulfilled") {
-        setProducts(productRes.value.data.products || []);
-      } else {
-        console.log(
-          "Product load error:",
-          productRes.reason?.response?.data || productRes.reason?.message,
-        );
-        setProducts([]);
       }
 
       if (galleryRes.status === "fulfilled") {
@@ -136,69 +122,7 @@ const Home = () => {
 
       <ProductFeatures />
 
-      <section className="intro-section">
-        <div className="container intro-grid">
-          <div>
-            <span className="section-kicker">Nurnobi Bamboo Craft</span>
-
-            <h2>All Kinds of Handmade Bamboo Products</h2>
-
-            <p>
-              Founded in 2002, Nurnobi Bamboo Craft is a Bangladesh-based
-              eco-friendly handicrafts manufacturing and exporting company. We
-              transform bamboo and natural materials into elegant home décor,
-              fashion accessories, kitchen products, storage solutions and
-              decorative art pieces.
-            </p>
-
-            <div className="hero-stats">
-              <div>
-                <strong>250+</strong>
-                <span>Artisans Supported</span>
-              </div>
-
-              <div>
-                <strong>1000+</strong>
-                <span>Families Impacted</span>
-              </div>
-
-              <div>
-                <strong>2002</strong>
-                <span>Founded</span>
-              </div>
-            </div>
-
-            <Link to="/about" className="primary-btn">
-              Learn More
-            </Link>
-          </div>
-
-          <div className="trust-grid">
-            <div>
-              <h3>Eco Friendly</h3>
-              <p>Bamboo-based sustainable handmade products.</p>
-            </div>
-
-            <div>
-              <h3>Women-Led Craft</h3>
-              <p>Empowering skilled women and men artisans.</p>
-            </div>
-
-            <div>
-              <h3>Export Ready</h3>
-              <p>Manufacturer, exporter, wholesaler and supplier.</p>
-            </div>
-
-            <div>
-              <h3>Ethical Production</h3>
-              <p>Community-focused and socially responsible production.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Product Commitment */}
-
       <section className="commitment-section py-16 bg-green-50">
         <div className="container mx-auto px-4 md:flex md:items-center md:gap-8">
           {/* Text Content */}
@@ -229,7 +153,7 @@ const Home = () => {
           {/* Image */}
           <div className="md:w-1/2 flex justify-center">
             <img
-              src="/src/assets/commitment-image.png" // replace with uploaded image path
+              src="/src/assets/commitment-image.png"
               alt="Commitment"
               className="w-full h-auto rounded-lg shadow-lg"
             />
@@ -237,46 +161,40 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Product Showcase */}
-
-      <section className="products-section">
-        <div className="container">
-          <div className="section-head">
-            <div>
-              <span className="section-kicker">Product Categories</span>
-              <h2>Bamboo Product Showcase</h2>
+      {/* Our Products Navigation Section - হুবহু image_c7921e.jpg এর লেআউট */}
+      {finalCategories.length > 0 && (
+        <section className="bg-white py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            {/* Section Head */}
+            <div className="mb-12">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
+                Our Products
+              </h2>
+              <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                Browse our wide range of eco-friendly handicraft products are
+                below:
+              </p>
             </div>
 
-            <Link to="/products" className="text-btn">
-              View All Products →
-            </Link>
-          </div>
-
-          <div className="category-grid">
-            {finalCategories.slice(0, 6).map((category) => (
-              <CategoryCard key={category._id} category={category} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {products.length > 0 && (
-        <section className="products-section light-bg">
-          <div className="container">
-            <div className="section-head">
-              <div>
-                <span className="section-kicker">Featured Products</span>
-                <h2>Handmade Bamboo Collection</h2>
-              </div>
-
-              <Link to="/products" className="text-btn">
-                Explore More →
+            {/* Category Links - বাটনগুলোকে লিংকে কনভার্ট করা হয়েছে */}
+            <div className="flex flex-wrap justify-center gap-3 max-w-5xl mx-auto">
+              {/* "ALL" লিঙ্ক - এটি সরাসরি সব প্রোডাক্ট পেজে নিয়ে যাবে */}
+              <Link
+                to="/products"
+                className="px-5 py-2.5 rounded-md font-bold text-xs md:text-sm uppercase tracking-wider shadow-sm bg-[#F3D16E] hover:bg-[#dfb53d] text-black transition-all duration-300"
+              >
+                ALL
               </Link>
-            </div>
 
-            <div className="product-grid">
-              {products.map((product) => (
-                <ProductCard product={product} key={product._id} />
+              {/* ডাইনামিক ক্যাটাগরি লিংকের লুপ */}
+              {finalCategories.map((category) => (
+                <Link
+                  key={category._id}
+                  to={`/products?category=${category._id}`} // ইউআরএল-এ ক্যাটাগরি আইডি পাস হচ্ছে
+                  className="px-5 py-2.5 rounded-md font-bold text-xs md:text-sm uppercase tracking-wider shadow-sm bg-[#F3D16E] hover:bg-[#dfb53d] text-black transition-all duration-300"
+                >
+                  {category.name}
+                </Link>
               ))}
             </div>
           </div>

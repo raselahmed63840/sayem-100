@@ -34,6 +34,7 @@ function App() {
             path="/products/category/:categoryId"
             element={<ProductGallery />}
           />
+          {/* <Route path="/products/category/:slug" element={<ProductDetails />} /> */}
           <Route path="/products/:slug" element={<ProductDetails />} />
           <Route path="/gallery" element={<PhotoGallery />} />
           <Route
