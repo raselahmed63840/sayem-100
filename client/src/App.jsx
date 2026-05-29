@@ -12,6 +12,7 @@ import ProductDetails from "./pages/ProductDetails";
 import PhotoGallery from "./pages/PhotoGallery";
 import SustainabilityCraftStory from "./pages/SustainabilityCraftStory";
 import Contact from "./pages/Contact";
+import Client from "./pages/Client";
 import NotFound from "./pages/NotFound";
 
 import AdminRoutes from "./routes/AdminRoutes";

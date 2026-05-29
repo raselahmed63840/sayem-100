@@ -130,7 +130,7 @@ const Navbar = () => {
                 {finalCategories.map((cat) => (
                   <Link
                     key={cat._id || cat.slug || cat.name}
-                    to={`/products?category=${cat._id || cat.slug}`}
+                    to={`/products/${cat._id || cat.slug}`}
                     onClick={closeMenu}
                   >
                     {cat.name}
@@ -145,6 +145,9 @@ const Navbar = () => {
 
             <NavLink to="/sustainability" onClick={closeMenu}>
               Sustainability
+            </NavLink>
+            <NavLink to="/clients" onClick={closeMenu}>
+              Clients
             </NavLink>
 
             <NavLink to="/contact" onClick={closeMenu}>

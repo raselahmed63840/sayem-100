@@ -197,39 +197,47 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="values-section">
-        <div className="container">
-          <div className="section-head center">
-            <span className="section-kicker">Our Product Values</span>
-            <h2>Natural, Sustainable, Handmade and Meaningful</h2>
+      {/* Product Commitment */}
+
+      <section className="commitment-section py-16 bg-green-50">
+        <div className="container mx-auto px-4 md:flex md:items-center md:gap-8">
+          {/* Text Content */}
+          <div className="md:w-1/2 text-center md:text-left mb-8 md:mb-0">
+            <span className="text-yellow-500 uppercase font-semibold text-sm block mb-2">
+              Our Commitment
+            </span>
+            <h2 className="text-3xl font-bold mb-6">
+              Empowering People, Preserving Heritage
+            </h2>
+
+            <ul className="mb-6 list-disc list-inside text-gray-700">
+              <li>Empowering women artisans.</li>
+              <li>Creating a sustainable future.</li>
+              <li>Nurturing nature and livelihoods.</li>
+              <li>Building communities through ethical production.</li>
+              <li>Preserving our planet one handmade piece at a time.</li>
+            </ul>
+
+            <Link
+              to="/sustainability"
+              className="inline-block px-6 py-3 border border-green-700 text-green-700 font-semibold rounded hover:bg-green-700 hover:text-white transition"
+            >
+              Read Craft Story
+            </Link>
           </div>
 
-          <div className="value-grid">
-            <div>
-              <h3>Natural Bamboo</h3>
-              <p>Crafted from bamboo and eco-friendly natural fibers.</p>
-            </div>
-
-            <div>
-              <h3>Traditional Craft</h3>
-              <p>Preserving cultural heritage through skilled handmade work.</p>
-            </div>
-
-            <div>
-              <h3>Modern Design</h3>
-              <p>Blending heritage with clean and premium product design.</p>
-            </div>
-
-            <div>
-              <h3>Global Buyers</h3>
-              <p>
-                Professional product showcase for local and international
-                clients.
-              </p>
-            </div>
+          {/* Image */}
+          <div className="md:w-1/2 flex justify-center">
+            <img
+              src="/src/assets/commitment-image.png" // replace with uploaded image path
+              alt="Commitment"
+              className="w-full h-auto rounded-lg shadow-lg"
+            />
           </div>
         </div>
       </section>
+
+      {/* Product Showcase */}
 
       <section className="products-section">
         <div className="container">
@@ -269,49 +277,6 @@ const Home = () => {
             <div className="product-grid">
               {products.map((product) => (
                 <ProductCard product={product} key={product._id} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      <section className="commitment-section">
-        <div className="container commitment-card">
-          <span className="section-kicker">Our Commitment</span>
-
-          <h2>Empowering People, Preserving Heritage</h2>
-
-          <ul>
-            <li>Empowering women artisans.</li>
-            <li>Creating a sustainable future.</li>
-            <li>Nurturing nature and livelihoods.</li>
-            <li>Building communities through ethical production.</li>
-            <li>Preserving our planet one handmade piece at a time.</li>
-          </ul>
-
-          <Link to="/sustainability" className="outline-light-btn">
-            Read Craft Story
-          </Link>
-        </div>
-      </section>
-
-      {gallery.length > 0 && (
-        <section className="products-section">
-          <div className="container">
-            <div className="section-head">
-              <div>
-                <span className="section-kicker">Gallery</span>
-                <h2>Products and Craftsmanship</h2>
-              </div>
-
-              <Link to="/gallery" className="text-btn">
-                View Gallery →
-              </Link>
-            </div>
-
-            <div className="gallery-grid">
-              {gallery.map((item) => (
-                <GalleryCard item={item} key={item._id} />
               ))}
             </div>
           </div>

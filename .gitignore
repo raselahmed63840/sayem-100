@@ -1,0 +1,12 @@
+ =============
+# ENV FILES
+# =========================
+.env
+.env.*
+client/.env
+server/.env
+
+ 
+ 
+
+ 
