@@ -40,6 +40,7 @@ function App() {
             path="/sustainability"
             element={<SustainabilityCraftStory />}
           />
+          <Route path="/clients" element={<Client />} />
           <Route path="/contact" element={<Contact />} />
 
           <Route path="/admin6935/*" element={<AdminRoutes />} />
