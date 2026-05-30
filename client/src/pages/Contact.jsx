@@ -29,7 +29,7 @@ const Contact = () => {
           <div className="contact-info space-y-3">
             <p className="flex items-center gap-2">
               <EnvelopeIcon className="w-5 h-5 text-green-600" />
-              <strong>Email:</strong> contact@nurnobibamboocraft.com
+              <strong>Email:</strong> nurunnabi@nurnobibamboocraft.com
             </p>
 
             <p className="flex items-center gap-2">
