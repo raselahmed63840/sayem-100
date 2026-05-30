@@ -55,16 +55,22 @@ const Footer = () => {
         {/* Contact info */}
         <div className="space-y-2">
           <h3 className="font-semibold mb-2">Contact</h3>
+
           <p className="flex items-center gap-2">
-            <EnvelopeIcon className="w-5 h-5 text-white" />
-            nurunnabi@nurnobibamboocraft.com
+            <EnvelopeIcon className="w-5 h-5 text-white shrink-0" />
+            {/* break-all এর পরিবর্তে whitespace-nowrap দেওয়া হয়েছে */}
+            <span className="whitespace-nowrap">
+              nurunnabi@nurnobibamboocraft.com
+            </span>
           </p>
+
           <p className="flex items-center gap-2">
-            <PhoneIcon className="w-5 h-5 text-white" />
+            <PhoneIcon className="w-5 h-5 text-white shrink-0" />
             +880 1719-632705
           </p>
-          <p className="flex items-center gap-2">
-            <MapPinIcon className="w-5 h-5 text-white" />
+
+          <p className="flex items-start gap-2">
+            <MapPinIcon className="w-5 h-5 text-white shrink-0 mt-0.5" />
             Borni, Delduar, Tangail, Dhaka, Bangladesh
           </p>
         </div>

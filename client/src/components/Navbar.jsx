@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
+
 import api from "../api/axios";
 import logo from "../assets/logo.png";
 
@@ -32,10 +33,22 @@ const fallbackCategories = [
   { _id: "gift-items", name: "Gift Items", slug: "gift-items" },
 ];
 
+const makeSlug = (value = "") =>
+  value
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+const getCategoryLinkValue = (category) =>
+  category._id || category.slug || makeSlug(category.name);
+
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [productOpen, setProductOpen] = useState(false);
   const [categories, setCategories] = useState([]);
+
   const navRef = useRef(null);
 
   useEffect(() => {
@@ -47,7 +60,11 @@ const Navbar = () => {
           : data.categories || data.data || [];
 
         setCategories(categoryList);
-      } catch {
+      } catch (error) {
+        console.log(
+          "Navbar category error:",
+          error.response?.data || error.message,
+        );
         setCategories([]);
       }
     };
@@ -64,6 +81,7 @@ const Navbar = () => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
@@ -90,11 +108,12 @@ const Navbar = () => {
         <div className="container nav-inner">
           <Link to="/" className="nav-brand" onClick={closeMenu}>
             <img src={logo} alt="Nurnobi Bamboo Craft" className="brand-logo" />
+
             <div className="brand-text">
               <h1>Nurnobi Bamboo Craft</h1>
               <span>Eco-Friendly Bamboo Craft Brand from Bangladesh</span>
             </div>
-          </Link> 
+          </Link>
 
           <button
             type="button"
@@ -130,7 +149,7 @@ const Navbar = () => {
                 {finalCategories.map((cat) => (
                   <Link
                     key={cat._id || cat.slug || cat.name}
-                    to={`/products?category=${cat._id || cat.slug}`}
+                    to={`/products/category/${getCategoryLinkValue(cat)}`}
                     onClick={closeMenu}
                   >
                     {cat.name}
@@ -146,6 +165,7 @@ const Navbar = () => {
             <NavLink to="/sustainability" onClick={closeMenu}>
               Sustainability
             </NavLink>
+
             <NavLink to="/clients" onClick={closeMenu}>
               Clients
             </NavLink>

@@ -4,8 +4,6 @@ import { Link } from "react-router-dom";
 import api from "../api/axios";
 import SEO from "../components/SEO";
 import HeroSlider from "../components/HeroSlider";
-import CategoryCard from "../components/CategoryCard";
-import GalleryCard from "../components/GalleryCard";
 import Loading from "../components/Loading";
 import ProductFeatures from "../components/ProductFeatures";
 
@@ -46,11 +44,21 @@ const fallbackCategories = [
   },
 ];
 
+const makeSlug = (value = "") =>
+  value
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+const getCategoryLinkValue = (category) =>
+  category._id || category.slug || makeSlug(category.name);
+
 const Home = () => {
   const [loading, setLoading] = useState(true);
   const [sliders, setSliders] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [gallery, setGallery] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -58,10 +66,9 @@ const Home = () => {
     const loadHomeData = async () => {
       setLoading(true);
 
-      const [sliderRes, categoryRes, galleryRes] = await Promise.allSettled([
+      const [sliderRes, categoryRes] = await Promise.allSettled([
         api.get("/sliders"),
         api.get("/categories"),
-        api.get("/gallery"),
       ]);
 
       if (!isMounted) return;
@@ -87,16 +94,6 @@ const Home = () => {
           categoryRes.reason?.response?.data || categoryRes.reason?.message,
         );
         setCategories(fallbackCategories);
-      }
-
-      if (galleryRes.status === "fulfilled") {
-        setGallery((galleryRes.value.data.gallery || []).slice(0, 6));
-      } else {
-        console.log(
-          "Gallery load error:",
-          galleryRes.reason?.response?.data || galleryRes.reason?.message,
-        );
-        setGallery([]);
       }
 
       setLoading(false);
@@ -130,6 +127,7 @@ const Home = () => {
             <span className="text-yellow-500 uppercase font-semibold text-sm block mb-2">
               Our Commitment
             </span>
+
             <h2 className="text-3xl font-bold mb-6">
               Empowering People, Preserving Heritage
             </h2>
@@ -161,7 +159,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Our Products Navigation Section - হুবহু image_c7921e.jpg এর লেআউট */}
+      {/* Our Products Navigation Section */}
       {finalCategories.length > 0 && (
         <section className="bg-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -170,15 +168,15 @@ const Home = () => {
               <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
                 Our Products
               </h2>
+
               <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
                 Browse our wide range of eco-friendly handicraft products are
                 below:
               </p>
             </div>
 
-            {/* Category Links - বাটনগুলোকে লিংকে কনভার্ট করা হয়েছে */}
+            {/* Category Links */}
             <div className="flex flex-wrap justify-center gap-3 max-w-5xl mx-auto">
-              {/* "ALL" লিঙ্ক - এটি সরাসরি সব প্রোডাক্ট পেজে নিয়ে যাবে */}
               <Link
                 to="/products"
                 className="px-5 py-2.5 rounded-md font-bold text-xs md:text-sm uppercase tracking-wider shadow-sm bg-[#F3D16E] hover:bg-[#dfb53d] text-black transition-all duration-300"
@@ -186,11 +184,10 @@ const Home = () => {
                 ALL
               </Link>
 
-              {/* ডাইনামিক ক্যাটাগরি লিংকের লুপ */}
               {finalCategories.map((category) => (
                 <Link
-                  key={category._id}
-                  to={`/products?category=${category._id}`} // ইউআরএল-এ ক্যাটাগরি আইডি পাস হচ্ছে
+                  key={category._id || category.slug || category.name}
+                  to={`/products/category/${getCategoryLinkValue(category)}`}
                   className="px-5 py-2.5 rounded-md font-bold text-xs md:text-sm uppercase tracking-wider shadow-sm bg-[#F3D16E] hover:bg-[#dfb53d] text-black transition-all duration-300"
                 >
                   {category.name}
