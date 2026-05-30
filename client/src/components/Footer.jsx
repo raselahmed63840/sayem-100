@@ -7,77 +7,110 @@ import {
 
 const Footer = () => {
   return (
-    <footer className="text-white" style={{ backgroundColor: "#1F7847" }}>
-      <div className="container mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Left section */}
-        <div>
-          <h2 className="text-lg font-bold mb-2">Nurnobi Bamboo Craft</h2>
-          <p className="text-sm">
-            All Kinds of Handmade Bamboo Products — Manufacturer, Exporter,
-            Wholesaler & Supplier. Founded in 2002 in Bangladesh.
-          </p>
+    <footer className="w-full bg-[#13723b] text-white pt-8 pb-14 md:pb-0">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Footer Content */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_1fr_1.6fr] gap-8 lg:gap-10 pb-7">
+          {/* Brand */}
+          <div>
+            <h2 className="text-xl md:text-2xl font-extrabold mb-4 leading-tight">
+              Nurnobi Bamboo Craft
+            </h2>
+
+            <p className="text-sm md:text-base leading-7 text-white">
+              All Kinds of Handmade Bamboo Products — Manufacturer, Exporter,
+              Wholesaler & Supplier. Founded in 2002 in Bangladesh.
+            </p>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h3 className="text-lg md:text-xl font-bold mb-4">Company</h3>
+
+            <div className="flex flex-col gap-3 text-sm md:text-base">
+              <Link to="/about" className="hover:text-yellow-200 transition">
+                About Us
+              </Link>
+
+              <Link
+                to="/sustainability"
+                className="hover:text-yellow-200 transition"
+              >
+                Sustainability
+              </Link>
+
+              <Link to="/gallery" className="hover:text-yellow-200 transition">
+                Gallery
+              </Link>
+
+              <Link to="/contact" className="hover:text-yellow-200 transition">
+                Contact
+              </Link>
+            </div>
+          </div>
+
+          {/* Products */}
+          <div>
+            <h3 className="text-lg md:text-xl font-bold mb-4">Products</h3>
+
+            <div className="flex flex-col gap-3 text-sm md:text-base">
+              <Link to="/products" className="hover:text-yellow-200 transition">
+                Product Description
+              </Link>
+
+              <Link to="/products" className="hover:text-yellow-200 transition">
+                Products
+              </Link>
+
+              <Link to="/products" className="hover:text-yellow-200 transition">
+                Bamboo Furniture
+              </Link>
+
+              <Link to="/products" className="hover:text-yellow-200 transition">
+                Bamboo Home Decor
+              </Link>
+            </div>
+          </div>
+
+          {/* Contact */}
+          <div className="min-w-0">
+            <h3 className="text-lg md:text-xl font-bold mb-4">Contact</h3>
+
+            <div className="flex flex-col gap-4 text-sm md:text-base">
+              <a
+                href="mailto:nurunnabi@nurnobibamboocraft.com"
+                className="flex items-center gap-3 hover:text-yellow-200 transition min-w-0"
+              >
+                <EnvelopeIcon className="w-5 h-5 flex-shrink-0" />
+                <span className="whitespace-nowrap text-[13px] sm:text-sm md:text-base">
+                  nurunnabi@nurnobibamboocraft.com
+                </span>
+              </a>
+
+              <a
+                href="tel:+8801719632705"
+                className="flex items-center gap-3 hover:text-yellow-200 transition"
+              >
+                <PhoneIcon className="w-5 h-5 flex-shrink-0" />
+                <span className="whitespace-nowrap">+880 1719-632705</span>
+              </a>
+
+              <div className="flex items-start gap-3">
+                <MapPinIcon className="w-5 h-5 mt-1 flex-shrink-0" />
+                <span className="leading-7">
+                  Borni, Delduar, Tangail, Dhaka, Bangladesh
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Company links */}
-        <div className="space-y-1">
-          <h3 className="font-semibold mb-2">Company</h3>
-          <Link to="/about" className="block hover:underline">
-            About Us
-          </Link>
-          <Link to="/sustainability" className="block hover:underline">
-            Sustainability
-          </Link>
-          <Link to="/gallery" className="block hover:underline">
-            Gallery
-          </Link>
-          <Link to="/contact" className="block hover:underline">
-            Contact
-          </Link>
-        </div>
-
-        {/* Products links */}
-        <div className="space-y-1">
-          <h3 className="font-semibold mb-2">Products</h3>
-          <Link to="/product-description" className="block hover:underline">
-            Product Description
-          </Link>
-          <Link to="/products" className="block hover:underline">
-            Products
-          </Link>
-          <Link to="/products" className="block hover:underline">
-            Bamboo Furniture
-          </Link>
-          <Link to="/products" className="block hover:underline">
-            Bamboo Home Decor
-          </Link>
-        </div>
-
-        {/* Contact info */}
-        <div className="space-y-2">
-          <h3 className="font-semibold mb-2">Contact</h3>
-
-          <p className="flex items-center gap-2">
-            <EnvelopeIcon className="w-5 h-5 text-white shrink-0" />
-            {/* break-all এর পরিবর্তে whitespace-nowrap দেওয়া হয়েছে */}
-            <span className="whitespace-nowrap">
-              nurunnabi@nurnobibamboocraft.com
-            </span>
-          </p>
-
-          <p className="flex items-center gap-2">
-            <PhoneIcon className="w-5 h-5 text-white shrink-0" />
-            +880 1719-632705
-          </p>
-
-          <p className="flex items-start gap-2">
-            <MapPinIcon className="w-5 h-5 text-white shrink-0 mt-0.5" />
-            Borni, Delduar, Tangail, Dhaka, Bangladesh
+        {/* Copyright */}
+        <div className="border-t border-white/20 py-3 text-center">
+          <p className="text-sm md:text-base">
+            © 2026 Nurnobi Bamboo Craft. All rights reserved.
           </p>
         </div>
-      </div>
-
-      <div className="text-center text-sm py-2 border-t border-white/20">
-        © {new Date().getFullYear()} Nurnobi Bamboo Craft. All rights reserved.
       </div>
     </footer>
   );

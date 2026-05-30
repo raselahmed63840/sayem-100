@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import api from "../api/axios";
 import SEO from "../components/SEO";
@@ -52,13 +52,21 @@ const makeSlug = (value = "") =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-const getCategoryLinkValue = (category) =>
+const getCategoryValue = (category) =>
   category._id || category.slug || makeSlug(category.name);
 
+const getList = (data, key) => {
+  if (Array.isArray(data)) return data;
+  return data?.[key] || data?.data || [];
+};
+
 const Home = () => {
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(true);
   const [sliders, setSliders] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [openingCategory, setOpeningCategory] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -84,7 +92,7 @@ const Home = () => {
       }
 
       if (categoryRes.status === "fulfilled") {
-        const apiCategories = categoryRes.value.data.categories || [];
+        const apiCategories = getList(categoryRes.value.data, "categories");
         setCategories(
           apiCategories.length > 0 ? apiCategories : fallbackCategories,
         );
@@ -106,10 +114,40 @@ const Home = () => {
     };
   }, []);
 
-  if (loading) return <Loading text="Preparing website..." />;
-
   const finalCategories =
     categories.length > 0 ? categories : fallbackCategories;
+
+  const openCategoryFirstProduct = async (category) => {
+    const categoryValue = getCategoryValue(category);
+
+    setOpeningCategory(categoryValue);
+
+    try {
+      const { data } = await api.get(
+        `/products?category=${encodeURIComponent(categoryValue)}&limit=1`,
+      );
+
+      const productList = getList(data, "products");
+      const firstProduct = productList[0];
+
+      if (firstProduct?.slug) {
+        navigate(`/products/${firstProduct.slug}`);
+        return;
+      }
+
+      navigate("/products");
+    } catch (error) {
+      console.log(
+        "Category product open error:",
+        error.response?.data || error.message,
+      );
+      navigate("/products");
+    } finally {
+      setOpeningCategory("");
+    }
+  };
+
+  if (loading) return <Loading text="Preparing website..." />;
 
   return (
     <>
@@ -119,20 +157,18 @@ const Home = () => {
 
       <ProductFeatures />
 
-      {/* Product Commitment */}
-      <section className="commitment-section py-16 bg-green-50">
-        <div className="container mx-auto px-4 md:flex md:items-center md:gap-8">
-          {/* Text Content */}
-          <div className="md:w-1/2 text-center md:text-left mb-8 md:mb-0">
-            <span className="text-yellow-500 uppercase font-semibold text-sm block mb-2">
+      <section className="bg-green-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+          <div className="text-center md:text-left">
+            <span className="text-yellow-600 uppercase font-bold text-sm tracking-widest block mb-3">
               Our Commitment
             </span>
 
-            <h2 className="text-3xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-6">
               Empowering People, Preserving Heritage
             </h2>
 
-            <ul className="mb-6 list-disc list-inside text-gray-700">
+            <ul className="space-y-2 text-gray-700 mb-8 text-base leading-relaxed list-disc list-inside">
               <li>Empowering women artisans.</li>
               <li>Creating a sustainable future.</li>
               <li>Nurturing nature and livelihoods.</li>
@@ -142,28 +178,25 @@ const Home = () => {
 
             <Link
               to="/sustainability"
-              className="inline-block px-6 py-3 border border-green-700 text-green-700 font-semibold rounded hover:bg-green-700 hover:text-white transition"
+              className="inline-flex items-center justify-center px-6 py-3 border border-[#13723b] text-[#13723b] font-bold rounded-md hover:bg-[#13723b] hover:text-white transition"
             >
               Read Craft Story
             </Link>
           </div>
 
-          {/* Image */}
-          <div className="md:w-1/2 flex justify-center">
+          <div className="flex justify-center">
             <img
               src="/src/assets/commitment-image.png"
               alt="Commitment"
-              className="w-full h-auto rounded-lg shadow-lg"
+              className="w-full max-w-xl h-auto rounded-lg shadow-lg object-cover"
             />
           </div>
         </div>
       </section>
 
-      {/* Our Products Navigation Section */}
       {finalCategories.length > 0 && (
         <section className="bg-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            {/* Section Head */}
             <div className="mb-12">
               <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
                 Our Products
@@ -175,24 +208,30 @@ const Home = () => {
               </p>
             </div>
 
-            {/* Category Links */}
             <div className="flex flex-wrap justify-center gap-3 max-w-5xl mx-auto">
               <Link
                 to="/products"
-                className="px-5 py-2.5 rounded-md font-bold text-xs md:text-sm uppercase tracking-wider shadow-sm bg-[#F3D16E] hover:bg-[#dfb53d] text-black transition-all duration-300"
+                className="px-5 py-2.5 rounded-md font-extrabold text-xs md:text-sm uppercase tracking-wider shadow-sm bg-[#F3D16E] hover:bg-[#dfb53d] text-black transition-all duration-300"
               >
                 ALL
               </Link>
 
-              {finalCategories.map((category) => (
-                <Link
-                  key={category._id || category.slug || category.name}
-                  to={`/products/category/${getCategoryLinkValue(category)}`}
-                  className="px-5 py-2.5 rounded-md font-bold text-xs md:text-sm uppercase tracking-wider shadow-sm bg-[#F3D16E] hover:bg-[#dfb53d] text-black transition-all duration-300"
-                >
-                  {category.name}
-                </Link>
-              ))}
+              {finalCategories.map((category) => {
+                const categoryValue = getCategoryValue(category);
+                const isOpening = openingCategory === categoryValue;
+
+                return (
+                  <button
+                    key={categoryValue}
+                    type="button"
+                    disabled={Boolean(openingCategory)}
+                    onClick={() => openCategoryFirstProduct(category)}
+                    className="px-5 py-2.5 rounded-md font-extrabold text-xs md:text-sm uppercase tracking-wider shadow-sm bg-[#F3D16E] hover:bg-[#dfb53d] text-black transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isOpening ? "Opening..." : category.name}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </section>
