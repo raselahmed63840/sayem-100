@@ -1,10 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+
 import api from "../api/axios";
 import getImageUrl from "../utils/imageHelper";
 import Loading from "../components/Loading";
 
 const STATIC_SIDE_IMAGE = "/details-static.jpg";
+
+const getImageKey = (image) => {
+  if (!image) return "";
+
+  if (typeof image === "string") {
+    return image;
+  }
+
+  return image.url || image.public_id || "";
+};
 
 const ProductDetails = () => {
   const { slug } = useParams();
@@ -14,25 +25,45 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const mainProductImage = useMemo(() => {
+    if (!product) return null;
+
+    if (product.thumbnail?.url) {
+      return product.thumbnail;
+    }
+
+    if (Array.isArray(product.images) && product.images[0]?.url) {
+      return product.images[0];
+    }
+
+    return null;
+  }, [product]);
+
   const galleryImages = useMemo(() => {
     if (!product) return [];
 
     const images = [];
-
-    if (product.thumbnail?.url) {
-      images.push(product.thumbnail);
-    }
+    const mainImageKey = getImageKey(mainProductImage);
 
     if (Array.isArray(product.images)) {
       product.images.forEach((img) => {
-        if (img?.url && !images.some((item) => item.url === img.url)) {
+        const imgKey = getImageKey(img);
+
+        if (!img?.url) return;
+        if (imgKey === mainImageKey) return;
+
+        const alreadyAdded = images.some(
+          (item) => getImageKey(item) === imgKey,
+        );
+
+        if (!alreadyAdded) {
           images.push(img);
         }
       });
     }
 
     return images;
-  }, [product]);
+  }, [product, mainProductImage]);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -41,7 +72,6 @@ const ProductDetails = () => {
         setError("");
 
         const { data } = await api.get(`/products/${slug}`);
-
         const foundProduct = data.product;
 
         if (!foundProduct) {
@@ -67,6 +97,7 @@ const ProductDetails = () => {
           "Product details error:",
           err.response?.data || err.message,
         );
+
         setError("Product details load failed.");
       } finally {
         setLoading(false);
@@ -99,8 +130,7 @@ const ProductDetails = () => {
         className="product-details-hero"
         style={{
           backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.1)), url(${getImageUrl(
-            product.thumbnail || product.images?.[0],
-            STATIC_SIDE_IMAGE,
+            mainProductImage || STATIC_SIDE_IMAGE,
           )})`,
         }}
       >
@@ -177,12 +207,10 @@ const ProductDetails = () => {
 
             <div className="details-static-image">
               <img
-                src={STATIC_SIDE_IMAGE}
-                alt="Natural bamboo material"
+                src={getImageUrl(mainProductImage || STATIC_SIDE_IMAGE)}
+                alt={product.title || "Natural bamboo material"}
                 onError={(e) => {
-                  e.currentTarget.src = getImageUrl(
-                    product.thumbnail || product.images?.[0],
-                  );
+                  e.currentTarget.src = STATIC_SIDE_IMAGE;
                 }}
               />
             </div>
@@ -190,16 +218,14 @@ const ProductDetails = () => {
         </div>
       </section>
 
-      <section className="details-gallery-section">
-        <div className="container">
-          <div className="product-gallery-grid">
-            {galleryImages.length === 0 ? (
-              <p>No product gallery image found.</p>
-            ) : (
-              galleryImages.map((img, index) => (
+      {galleryImages.length > 0 && (
+        <section className="details-gallery-section">
+          <div className="container">
+            <div className="product-gallery-grid">
+              {galleryImages.map((img, index) => (
                 <div
                   className="details-gallery-card"
-                  key={img.public_id || index}
+                  key={img.public_id || img.url || index}
                 >
                   <img
                     src={getImageUrl(img)}
@@ -209,11 +235,11 @@ const ProductDetails = () => {
                     }}
                   />
                 </div>
-              ))
-            )}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {relatedProducts.length > 0 && (
         <section className="related-products-section">
@@ -237,6 +263,7 @@ const ProductDetails = () => {
                       e.currentTarget.src = "/logo.png";
                     }}
                   />
+
                   <h3>{item.title}</h3>
                 </Link>
               ))}
