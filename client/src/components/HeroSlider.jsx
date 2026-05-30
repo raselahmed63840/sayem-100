@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getImageUrl } from "../utils/imageHelper";
 
+const heroTitleStyle = {
+  fontSize: "clamp(38px, 5vw, 72px)",
+  lineHeight: "1.08",
+};
+
 const HeroSlider = ({ slides = [] }) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -29,7 +34,11 @@ const HeroSlider = ({ slides = [] }) => {
 
           <div className="nb-hero-content">
             <p>Nurnobi Bamboo Craft</p>
-            <h1>All Kinds of Handmade Bamboo Products</h1>
+
+            <h1 style={heroTitleStyle}>
+              All Kinds of Handmade Bamboo Products
+            </h1>
+
             <span>Eco-friendly handmade bamboo products from Bangladesh.</span>
 
             <Link to="/products" className="nb-hero-btn">
@@ -62,7 +71,9 @@ const HeroSlider = ({ slides = [] }) => {
           <div className="nb-hero-content">
             <p>{slide.subtitle || "Nurnobi Bamboo Craft"}</p>
 
-            <h1>{slide.title || "Handmade Bamboo Products"}</h1>
+            <h1 style={heroTitleStyle}>
+              {slide.title || "Handmade Bamboo Products"}
+            </h1>
 
             <span>
               {slide.description ||
