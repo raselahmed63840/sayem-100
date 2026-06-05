@@ -20,22 +20,22 @@ const productAttributes = [
   {
     img: ecoFriendly,
     title: "Eco-Friendly",
-    desc: "Bamboo-based sustainable handmade products.",
+    desc: "Made with sustainable materials that are kind to our planet.",
   },
   {
     img: organic,
-    title: "Women-Led Craft",
-    desc: "Empowering skilled women and men artisans.",
+    title: "Organic",
+    desc: "Crafted from natural, pesticide-free fibers for a pure product.",
   },
   {
     img: natural,
-    title: "Export Ready",
-    desc: "Manufacturer, exporter, wholesaler and supplier.",
+    title: "Natural",
+    desc: "Utilizing the inherent beauty and strength of natural materials.",
   },
   {
     img: biodegradable,
-    title: "Ethical Production",
-    desc: "Community-focused and socially responsible production.",
+    title: "Biodegradable",
+    desc: "Designed to return to the earth, leaving no trace behind.",
   },
 ];
 

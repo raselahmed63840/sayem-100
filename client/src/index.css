@@ -425,11 +425,11 @@ textarea {
 }
 
 .section-kicker {
-  color: var(--bamboo);
+  color: #111111;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 1.6px;
-  font-size: 13px;
+  letter-spacing: 1.8px;
+  font-size: 18px;
 }
 
 .section-head {

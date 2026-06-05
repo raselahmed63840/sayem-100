@@ -191,12 +191,21 @@ const Home = () => {
               Empowering People, Preserving Heritage
             </h2>
 
-            <ul className="mb-6 list-disc list-inside text-gray-700">
-              <li>Empowering women artisans.</li>
-              <li>Creating a sustainable future.</li>
-              <li>Nurturing nature and livelihoods.</li>
-              <li>Building communities through ethical production.</li>
-              <li>Preserving our planet one handmade piece at a time.</li>
+            <ul className="mt-8 space-y-2 list-none text-gray-700 text-base md:text-lg">
+              {[
+                "Empowering women artisans.",
+                "Creating a sustainable future.",
+                "Nurturing nature and livelihoods.",
+                "Building communities through ethical production.",
+                "Preserving our planet one handmade piece at a time.",
+              ].map((item, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <span className="text-[#4B7F35] font-bold text-xl leading-6">
+                    ✓
+                  </span>
+                  <span>{item}</span>
+                </li>
+              ))}
             </ul>
 
             <Link

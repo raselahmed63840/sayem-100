@@ -151,7 +151,7 @@ const ProductDetails = () => {
 
           <div className="details-info-grid">
             <div className="details-text">
-              <h3>Product details</h3>
+              <h3>Product Details : </h3>
 
               <p>
                 <strong>{product.title}:</strong>{" "}

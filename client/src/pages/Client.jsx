@@ -1,10 +1,11 @@
-// src/pages/ClientPage.jsx
+// src/pages/Client.jsx
+
 import React from "react";
 import SEO from "../components/SEO";
 
 const clientsData = [
   {
-    name: "European Countries",
+    name: "EUROPE",
     items: [
       "Germany",
       "Netherlands",
@@ -17,11 +18,11 @@ const clientsData = [
     ],
   },
   {
-    name: "North American Countries",
+    name: "NORTH AMERICA",
     items: ["United States of America (USA)", "Canada"],
   },
   {
-    name: "Asia Countries",
+    name: "ASIA",
     items: [
       "Turkey",
       "Japan",
@@ -32,7 +33,10 @@ const clientsData = [
       "Oman",
     ],
   },
-  { name: "South America Countries", items: ["Brazil", "Argentina"] },
+  {
+    name: "SOUTH AMERICA",
+    items: ["Brazil", "Argentina"],
+  },
 ];
 
 const ClientPage = () => {
@@ -44,26 +48,29 @@ const ClientPage = () => {
       />
 
       <div className="container my-16">
-        <h2 className="text-3xl font-bold text-center mb-2">
+        <h2 className="text-3xl md:text-4xl font-black text-center text-black mb-3">
           Clients list in the world
         </h2>
-        <p className="text-center text-gray-600 mb-8">
+
+        <p className="text-center text-gray-600 mb-10 text-base md:text-lg">
           Regional markets we currently serve
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {clientsData.map((region, index) => (
             <div
               key={index}
-              className="border rounded-md p-6 shadow-sm hover:shadow-lg transition"
+              className="bg-white border border-gray-200 rounded-lg p-7 shadow-sm hover:shadow-lg transition duration-300"
             >
-              <h3
-                className="text-lg font-semibold mb-3"
-                style={{ color: getColor(index) }}
-              >
-                {region.name}
-              </h3>
-              <ul className="list-disc list-inside space-y-1 text-gray-700">
+              <div className="mb-6 text-center">
+                <h3 className="text-xl font-black text-black uppercase tracking-wide">
+                  {region.name}
+                </h3>
+
+                <div className="mx-auto mt-3 h-[3px] w-12 rounded-full bg-[#d4a633]"></div>
+              </div>
+
+              <ul className="list-disc pl-6 space-y-3 text-gray-800 text-base md:text-lg leading-relaxed">
                 {region.items.map((country, idx) => (
                   <li key={idx}>{country}</li>
                 ))}
@@ -74,12 +81,6 @@ const ClientPage = () => {
       </div>
     </section>
   );
-};
-
-// Helper function to assign colors
-const getColor = (index) => {
-  const colors = ["#2c3e50", "#d35400", "#2980b9", "#7b1e25"];
-  return colors[index % colors.length];
 };
 
 export default ClientPage;
