@@ -219,7 +219,7 @@ const Home = () => {
 
           <div className="md:w-1/2 flex justify-center">
             <img
-              src="/src/assets/commitment-image.png"
+              src={commitmentImage}
               alt="Commitment"
               className="w-full h-auto rounded-lg shadow-lg"
             />

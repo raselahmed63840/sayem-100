@@ -106,10 +106,20 @@ const Footer = () => {
         </div>
 
         {/* Copyright */}
-        <div className="border-t border-white/20 py-3 text-center">
-          <p className="text-sm md:text-base">
-            © 2026 Nurnobi Bamboo Craft. All rights reserved.
-          </p>
+        {/* Copyright */}
+        <div className="border-t border-white/20 py-3">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs md:text-sm italic">
+            <p>© 2026 Nurnobi Bamboo Craft. All rights reserved.</p>
+
+            <a
+              href="https://wa.me/8801863840408"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-yellow-200 transition"
+            >
+              Developed by Rasel Ahmed
+            </a>
+          </div>
         </div>
       </div>
     </footer>
