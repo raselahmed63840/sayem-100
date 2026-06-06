@@ -6,6 +6,7 @@ import SEO from "../components/SEO";
 import HeroSlider from "../components/HeroSlider";
 import Loading from "../components/Loading";
 import ProductFeatures from "../components/ProductFeatures";
+import commitmentImage from "../assets/commitment-image.png";
 
 const fallbackCategories = [
   {
